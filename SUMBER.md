@@ -41,7 +41,25 @@ pengembang aplikasi.
 
 Aturan keberlakuan dewasa telah dibandingkan dengan
 <https://www.kalenderbali.org/referensialaayu.php>:
-**220 dari 220 nama cocok, 219 aturan sama persis (99,5%)**.
-Satu selisih (*Karna Sula*) sengaja dibiarkan apa adanya menunggu keputusan
-rapat peranda. Tidak ada teks dari situs tersebut yang disalin ke dalam
-repositori ini.
+
+> **220 dari 220 nama cocok, dan 220 aturan sama persis (100%).**
+
+Teks keterangannya berbeda susunan kalimat pada 51 dewasa (berkas Excel
+memakai campuran bahasa Bali, rujukan memakai bahasa Indonesia), tetapi
+tidak ada satu pun aturan keberlakuan yang berselisih.
+
+Tidak ada teks dari situs tersebut yang disalin ke dalam repositori ini;
+rujukan hanya dipakai untuk memeriksa silang.
+
+### Catatan: *Karna Sula* dan *Karnasula*
+
+Keduanya adalah **dewasa yang berlainan**, dan sama-sama ada pada kedua sumber:
+
+| | Karna Sula | Karnasula |
+|---|---|---|
+| Dasar | Penanggalan bulan | Pawukon (Saptawara + Wuku) |
+| Sifat | Ala | Ayu & Ala |
+| Arti | Tidak baik untuk perkawinan, membeli ternak, rapat, berbicara | Baik untuk membuat kentongan, bajra, kendang; tidak baik membangun tempat tidur dan mengadakan rapat |
+
+Perbedaan penulisan namanya (berspasi dan tidak) memang halus, sehingga mudah
+tertukar bila nama dicocokkan dengan mengabaikan spasi.
