@@ -288,6 +288,7 @@ function Kalender({ meta, tanggal, setTanggal, bolehSunting }) {
               </div>
               <Strip n={detail.nilai} meta={meta} />
               <div style={{ height: '.6rem' }} />
+              <AlahDeningAlah a={detail.alahDeningAlah} ringkas />
               <RinciKeperluan d={detail} meta={meta} />
               <button className="btn bukapenuh" onClick={() => setPopup(true)}>Lihat keterangan lengkap</button>
               <div style={{ height: '.5rem' }} />
@@ -460,6 +461,36 @@ function RinciKeperluan({ d, meta }) {
           </React.Fragment>
         );
       })}
+    </div>
+  );
+}
+
+
+/**
+ * Alah dening alah — yang lemah kalah oleh yang lebih kuat.
+ * Bobot 1–4 setara warna penyusun: Hitam, Coklat, Hijau, Biru.
+ */
+const NAMA_BOBOT = ['—', 'Hitam', 'Coklat', 'Hijau', 'Biru'];
+
+function AlahDeningAlah({ a, ringkas }) {
+  if (!a) return null;
+  const sisi = (judul, o, kelas) => (
+    <div className={`adasisi ${kelas} ${a.kode === kelas + '-menang' ? 'menang' : ''}`}>
+      <div className="jd">{judul}</div>
+      <div className="bb">{o.bobot || '—'}</div>
+      <div className="nb">{o.bobot ? NAMA_BOBOT[o.bobot] : 'tanpa bobot'}</div>
+      {!ringkas && o.dewasa.length > 0 &&
+        <div className="dw" title={o.dewasa.join(', ')}>{o.dewasa.join(', ')}</div>}
+    </div>
+  );
+  return (
+    <div className="ada">
+      <div className="adabaris">
+        {sisi('Ayu', a.ayu, 'ayu')}
+        <div className="adalawan">{a.selisih > 0 ? '›' : a.selisih < 0 ? '‹' : '='}</div>
+        {sisi('Ala', a.ala, 'ala')}
+      </div>
+      <div className={`adaputusan p-${a.kode}`}>{a.teks}</div>
     </div>
   );
 }
@@ -676,7 +707,16 @@ function DetailHari({ d, meta, muatUlang, bolehSunting, tutup }) {
       </div>
 
       {pesan && <div className={`putusan p-${pesan[0] === 'ok' ? 'sangat-baik' : 'pantang'}`}>{pesan[1]}</div>}
-      <div className={`putusan p-${d.putusan.kode}`}>{d.putusan.teks}</div>
+      {/* Alah dening alah menjadi vonis utama: ia menimbang bobot seluruh
+          dewasa, sedangkan putusan lama hanya membaca kolom Ngaben/Pawiwahan. */}
+      <AlahDeningAlah a={d.alahDeningAlah} />
+      <div className={`putusan p-${d.putusan.kode}`} style={{ fontSize: '.86rem' }}>
+        <span style={{ display: 'block', fontFamily: "'Lora',serif", fontWeight: 400,
+          fontSize: '.72rem', textTransform: 'uppercase', letterSpacing: '.08em', opacity: .8 }}>
+          Menurut kolom Ngaben/Pawiwahan saja
+        </span>
+        {d.putusan.teks}
+      </div>
       {d.kesimpulan && (
         <div className="kotak" style={{ display: 'block' }}>
           <b>Kesimpulan dewasa hari ini: </b>
@@ -741,7 +781,8 @@ function DetailHari({ d, meta, muatUlang, bolehSunting, tutup }) {
           {[0, 2, 1, 3].flatMap((sf) => d.dewasa.filter((x) => x.sifat === sf)).map((x) => (
             <div key={x.id} className={`dbaris s${x.sifat}`}>
               <div className="nm">{x.nama}
-                <span style={{ fontWeight: 400, fontSize: '.74rem', color: '#6B6577', marginLeft: '.4rem' }}>
+                {x.bobot > 0 && <span className={`bobotpil b${x.bobot}`} title={`Bobot ${x.bobot} — ${NAMA_BOBOT[x.bobot]}`}>{x.bobot}</span>}
+                <span style={{ fontWeight: 400, fontSize: '.74rem', color: 'var(--tulis3)', marginLeft: '.4rem' }}>
                   {x.sumber === 'excel' ? 'dari Excel' : 'dari aturan'}</span></div>
               <div className="ds">{x.keterangan || '—'}</div>
             </div>
@@ -945,6 +986,9 @@ function PapanTika() {
                 </small>
               </div>
 
+              <div className="tkjudulkecil">Alah Dening Alah</div>
+              <AlahDeningAlah a={sel.alahDeningAlah} />
+
               <div className="tkjudulkecil">Panca Yadnya</div>
               <table className="tktabel">
                 <tbody>
@@ -986,7 +1030,8 @@ function PapanTika() {
                     <div key={x.id} className={`tkbaris s${x.sifat}`}>
                       <div className={`lb ${KELAS_SIFAT[x.sifat]}`}>{li >= 0 ? LAMBANG[li] : '·'}</div>
                       <div>
-                        <div className="nm">{x.nama}</div>
+                        <div className="nm">{x.nama}
+                          {x.bobot > 0 && <span className={`bobotpil b${x.bobot}`}>{x.bobot}</span>}</div>
                         <div className="kt">{SIFAT[x.sifat]}
                           {yad.length > 0 && ' · ' + yad.map(([k, n]) =>
                             `${data.yadnya.find((y) => y.kunci === k)?.nama || k}: ${n === 'ala' ? 'Ala' : 'Ayu'}`).join(', ')}

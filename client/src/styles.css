@@ -421,3 +421,32 @@ h3{font-family:'Eczar',serif;font-weight:600;font-size:1.02rem;margin:1rem 0 .5r
 .kakibawah{border-top:1px solid var(--garis);background:var(--kartu2);
   padding:.75rem var(--sela);font-size:.75rem;color:var(--tulis3);text-align:center;line-height:1.6}
 @media(max-width:760px){ .kakiisi{gap:1rem;padding:1rem .8rem} }
+
+/* ---------- Alah dening alah ---------- */
+.ada{margin:.3rem 0 .6rem}
+.adabaris{display:grid;grid-template-columns:1fr auto 1fr;gap:.4rem;align-items:stretch}
+.adasisi{border:1px solid var(--garis2);border-radius:.5rem;padding:.45rem .5rem;text-align:center;background:var(--kartu2)}
+.adasisi.ayu{border-color:var(--ayu)} .adasisi.ala{border-color:var(--ala)}
+.adasisi.menang{box-shadow:0 0 0 2px currentColor}
+.adasisi.ayu.menang{background:var(--ayubg);color:var(--ayuT)}
+.adasisi.ala.menang{background:var(--alabg);color:var(--alaT)}
+.adasisi .jd{font-family:'Eczar',serif;font-weight:700;font-size:.76rem;letter-spacing:.08em;text-transform:uppercase}
+.adasisi .bb{font-family:'Eczar',serif;font-weight:800;font-size:1.5rem;line-height:1.1}
+.adasisi .nb{font-size:.68rem;color:var(--tulis3)}
+.adasisi.menang .nb{color:inherit;opacity:.85}
+.adasisi .dw{font-size:.66rem;color:var(--tulis3);margin-top:.2rem;overflow:hidden;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.adalawan{display:flex;align-items:center;justify-content:center;font-family:'Eczar',serif;
+  font-weight:800;font-size:1.3rem;color:var(--tulis3);padding:0 .1rem}
+.adaputusan{margin-top:.4rem;border-radius:.45rem;padding:.4rem .5rem;font-size:.76rem;
+  font-weight:600;text-align:center;border:1px solid}
+.p-ayu-menang{background:var(--ayubg);color:var(--ayuT);border-color:var(--ayu)}
+.p-ala-menang{background:var(--alabg);color:var(--alaT);border-color:var(--ala)}
+.p-seimbang{background:#FBE7D2;color:#8A4A0B;border-color:#C9803C}
+.p-netral{background:var(--kartu3);color:var(--tulis2);border-color:var(--garis2)}
+.bobotpil{display:inline-block;min-width:1.3rem;text-align:center;font-size:.68rem;font-weight:800;
+  border-radius:.25rem;padding:.02rem .3rem;margin-left:.35rem;color:#fff}
+.bobotpil.b1{background:#2B2B2B} .bobotpil.b2{background:#C25A10}
+.bobotpil.b3{background:#2E7D32} .bobotpil.b4{background:#1565C0}
+.tkkartu .adasisi{background:#F7F1DF;border-color:#9C8A5E}
+.tkkartu .adalawan{color:#6B5A33}

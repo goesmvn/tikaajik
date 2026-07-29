@@ -110,3 +110,41 @@ export function cocokAlternatif(r, hari) {
 export function berlaku(alternatif, hari) {
   return alternatif.length > 0 && alternatif.some((r) => cocokAlternatif(r, hari));
 }
+
+/**
+ * BOBOT ATURAN — dasar hukum "alah dening alah".
+ *
+ * Penyusun menetapkan bahwa warna pada kolom Ngaben/Pawiwahan menandai berapa
+ * banyak keluarga parameter Wariga yang mengunci suatu hari:
+ *
+ *   1 Hitam  — Wewaran saja
+ *   2 Coklat — Wewaran + Wuku
+ *   3 Hijau  — Wewaran + Wuku + Tanggal/Panglong
+ *   4 Biru   — Wewaran + Wuku + Tanggal/Panglong + Sasih
+ *
+ * Logika yang sama diterapkan di sini kepada aturan tiap dewasa, sehingga
+ * seluruh dewasa memperoleh bobot pada skala yang sama. Ini PERLUASAN atas
+ * kaidah penyusun — beliau menuliskannya untuk kolom warna, bukan untuk tiap
+ * dewasa — namun terbukti selaras: makin tinggi bobotnya, makin jarang dewasa
+ * itu muncul (rata-rata 154 → 104 → 67 hari per 2.100 hari untuk bobot 1→2→3).
+ */
+export function bobotAlternatif(r) {
+  let b = 0;
+  if (r.wara) b = Math.max(b, 1);
+  if (r.wuku) b = Math.max(b, 2);
+  if (r.penanggal || r.panglong || r.purnama || r.tilem) b = Math.max(b, 3);
+  if (r.sasih) b = Math.max(b, 4);
+  return b;
+}
+
+/** Bobot satu dewasa = alternatif terkuat yang dimilikinya. */
+export function bobotAturan(alternatif) {
+  return alternatif.length ? Math.max(...alternatif.map(bobotAlternatif)) : 0;
+}
+
+/** Bobot alternatif yang benar-benar cocok pada hari tertentu. */
+export function bobotPadaHari(alternatif, hari) {
+  let b = 0;
+  for (const r of alternatif) if (cocokAlternatif(r, hari)) b = Math.max(b, bobotAlternatif(r));
+  return b;
+}

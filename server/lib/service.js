@@ -9,7 +9,7 @@
  */
 import { db } from './db.js';
 import { dayInfo, gradesAt, dayIndex, isoOf, parseTP, EXCEL_RANGE, TARAF, META } from './calendar.js';
-import { parseKondisi, berlaku } from './rules.js';
+import { parseKondisi, berlaku, bobotAturan, bobotPadaHari } from './rules.js';
 
 const E_WUKU = ['Sinta','Landep','Ukir','Kulantir','Tolu','Gumbreg','Wariga','Warigadean',
   'Julungwangi','Sungsang','Dungulan','Kuningan','Langkir','Medangsia','Pujut','Pahang',
@@ -51,8 +51,11 @@ export function dewasaPadaHari(i, hari) {
       sumber = 'aturan';
     }
     if (berlakuHariIni) {
+      // Bobot diambil dari alternatif yang benar-benar cocok hari itu; bila
+      // hari diambil dari tabel Excel, dipakai bobot tertinggi aturannya.
+      const bobot = sumber === 'aturan' ? bobotPadaHari(d.alternatif, hari) : bobotAturan(d.alternatif);
       hasil.push({
-        id: d.id, nama: d.nama, sifat: d.sifat,
+        id: d.id, nama: d.nama, sifat: d.sifat, bobot,
         keterangan: d.keterangan, kondisi: d.kondisi, sumber,
       });
     }
@@ -95,6 +98,7 @@ export function hari(tanggalISO) {
     dalamRentangExcel: dalamExcel(i),
     putusan: putusan(nilai),
     kesimpulan: kesimpulanDewasa(dewasa),
+    alahDeningAlah: alahDeningAlah(dewasa, nilai),
     yadnya: yadnyaHari(dewasa),
     daftarYadnya: YADNYA.map(({ kunci, nama, jelas }) => ({ kunci, nama, jelas })),
   };
@@ -139,6 +143,48 @@ export function yadnyaHari(daftar) {
   return out;
 }
 
+/**
+ * ALAH DENING ALAH — yang lemah kalah oleh yang lebih kuat.
+ *
+ * Kaidah penyusun: "Nilai energi kebaikan yang parameter alamnya lebih lengkap
+ * secara otomatis mampu menetralisir dan mengatasi efek pantangan dari variabel
+ * yang lebih rendah." Di sini kaidah itu dijalankan atas BOBOT, bukan sekadar
+ * ada/tidaknya penanda.
+ *
+ * Yang dibandingkan adalah bobot TERTINGGI di masing-masing pihak — bukan
+ * jumlahnya — sebab kaidah ini soal kedudukan, bukan banyak-banyakan. Seratus
+ * dewasa ala berbobot 1 tetap kalah oleh satu dewasa ayu berbobot 3.
+ *
+ * Kolom Ngaben/Pawiwahan bawaan Excel ikut ditimbang karena tarafnya memang
+ * sudah bernilai 1–4 menurut penyusun sendiri.
+ */
+export function alahDeningAlah(daftar, nilai) {
+  const kuat = (sifat) => {
+    let b = 0, siapa = [];
+    for (const d of daftar) {
+      const ikut = d.sifat === sifat || d.sifat === 2;   // 2 = Ayu & Ala, ikut keduanya
+      if (!ikut || !d.bobot) continue;
+      if (d.bobot > b) { b = d.bobot; siapa = [d.nama]; }
+      else if (d.bobot === b) siapa.push(d.nama);
+    }
+    return { bobot: b, dewasa: siapa };
+  };
+  const ayu = kuat(0), ala = kuat(1);
+  if (nilai) {
+    const na = Math.max(nilai.ngabenAyu.taraf, nilai.pawiwahanAyu.taraf);
+    const nl = Math.max(nilai.ngabenAla.taraf, nilai.pawiwahanAla.taraf);
+    if (na > ayu.bobot) { ayu.bobot = na; ayu.dewasa = ['kolom Ngaben/Pawiwahan']; }
+    if (nl > ala.bobot) { ala.bobot = nl; ala.dewasa = ['kolom Ngaben/Pawiwahan']; }
+  }
+  const selisih = ayu.bobot - ala.bobot;
+  let kode, teks;
+  if (!ayu.bobot && !ala.bobot) { kode = 'netral'; teks = 'Tanpa penanda berbobot'; }
+  else if (selisih > 0) { kode = 'ayu-menang'; teks = `Ayu unggul — bobot ${ayu.bobot} mengalahkan Ala bobot ${ala.bobot}`; }
+  else if (selisih < 0) { kode = 'ala-menang'; teks = `Ala unggul — bobot ${ala.bobot} mengalahkan Ayu bobot ${ayu.bobot}`; }
+  else { kode = 'seimbang'; teks = `Seimbang — keduanya berbobot ${ayu.bobot}, perlu pertimbangan peranda`; }
+  return { ayu, ala, selisih, kode, teks };
+}
+
 /** Terapkan "Rule of Decision" penyusun untuk menyimpulkan mutu hari. */
 export function putusan(nilai) {
   const a = Math.max(nilai.pawiwahanAyu.taraf, nilai.ngabenAyu.taraf);
@@ -177,6 +223,7 @@ export function bulan(tahun, bln) {
       nilai, adaCatatan: jmlCatatan > 0, putusan: putusan(nilai),
       jumlahDewasa: dewasa.length,
       kesimpulan: kesimpulanDewasa(dewasa),
+      alahDeningAlah: alahDeningAlah(dewasa, nilai),
       // Fase bulan: tradisional (kolom penanggalan) dan astronomis (hasil audit
       // penyusun). Keduanya dikirim supaya selisihnya kelihatan, bukan disamarkan.
       purnama: dasar.purnama, tilem: dasar.tilem,
@@ -333,7 +380,8 @@ export function tikaPawukon() {
     for (let p = 0; p < 210; p++) if (berlaku(d.alternatif, wakil[p])) kena.push(p);
     if (!kena.length) continue;
     daftar.push({ id: d.id, nama: d.nama, sifat: d.sifat, keterangan: d.keterangan,
-      jumlah: kena.length, yadnya: yadnyaDewasa(d.keterangan) });
+      jumlah: kena.length, yadnya: yadnyaDewasa(d.keterangan),
+      bobot: bobotAturan(d.alternatif) });
     for (const p of kena) sel[p].push(d.id);
   }
 
@@ -372,8 +420,9 @@ export function tikaPawukon() {
       hari.push({
         pawukon: p,
         lambang: isi.filter((x) => petaLambang.has(x.id)).map((x) => petaLambang.get(x.id)).sort((a, b) => a - b),
-        dewasa: isi.map((x) => ({ id: x.id, nama: x.nama, sifat: x.sifat, yadnya: x.yadnya })),
+        dewasa: isi.map((x) => ({ id: x.id, nama: x.nama, sifat: x.sifat, yadnya: x.yadnya, bobot: x.bobot })),
         tingkat,
+        alahDeningAlah: alahDeningAlah(isi, null),
         hitung: { umum: nilaiUmum, yadnya: nilaiYadnya },
         excel: kecenderunganExcel(p),
       });
