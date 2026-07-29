@@ -450,3 +450,20 @@ h3{font-family:'Eczar',serif;font-weight:600;font-size:1.02rem;margin:1rem 0 .5r
 .bobotpil.b3{background:#2E7D32} .bobotpil.b4{background:#1565C0}
 .tkkartu .adasisi{background:#F7F1DF;border-color:#9C8A5E}
 .tkkartu .adalawan{color:#6B5A33}
+
+/* ---------- tabel putusan per keperluan ---------- */
+.kpt{width:100%;border-collapse:collapse;font-size:.76rem}
+.kpt th{background:var(--kartu3);padding:.3rem .35rem;text-align:left;font-family:'Eczar',serif;
+  font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;color:var(--tulis2)}
+.kpt th:nth-child(2),.kpt th:nth-child(3){text-align:center;width:2.1rem}
+.kpt td{padding:.3rem .35rem;border-bottom:1px solid var(--garis)}
+.kpt tr.utamabaris td{font-weight:700;background:var(--kartu2)}
+.kpt td.bb{text-align:center;font-family:'Eczar',serif;font-weight:700;font-size:.92rem;color:var(--tulis3)}
+.kpt td.bb.unggul{color:var(--tulis);background:var(--kartu3);border-radius:.25rem}
+.kpv{display:inline-block;font-size:.66rem;font-weight:700;padding:.05rem .35rem;
+  border-radius:.25rem;border:1px solid;white-space:nowrap}
+.kpv.p-ayu-menang{background:var(--ayubg);color:var(--ayuT);border-color:var(--ayu)}
+.kpv.p-ala-menang{background:var(--alabg);color:var(--alaT);border-color:var(--ala)}
+.kpv.p-seimbang{background:#FBE7D2;color:#8A4A0B;border-color:#C9803C}
+.kpv.p-netral{background:var(--kartu3);color:var(--tulis3);border-color:var(--garis2)}
+.detail .kpt{font-size:.82rem}

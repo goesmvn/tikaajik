@@ -98,7 +98,7 @@ export function hari(tanggalISO) {
     dalamRentangExcel: dalamExcel(i),
     putusan: putusan(nilai),
     kesimpulan: kesimpulanDewasa(dewasa),
-    alahDeningAlah: alahDeningAlah(dewasa, nilai),
+    keperluan: putusanKeperluan(dewasa, nilai),
     yadnya: yadnyaHari(dewasa),
     daftarYadnya: YADNYA.map(({ kunci, nama, jelas }) => ({ kunci, nama, jelas })),
   };
@@ -158,7 +158,7 @@ export function yadnyaHari(daftar) {
  * Kolom Ngaben/Pawiwahan bawaan Excel ikut ditimbang karena tarafnya memang
  * sudah bernilai 1–4 menurut penyusun sendiri.
  */
-export function alahDeningAlah(daftar, nilai) {
+export function alahDeningAlah(daftar, kolom) {
   const kuat = (sifat) => {
     let b = 0, siapa = [];
     for (const d of daftar) {
@@ -170,11 +170,9 @@ export function alahDeningAlah(daftar, nilai) {
     return { bobot: b, dewasa: siapa };
   };
   const ayu = kuat(0), ala = kuat(1);
-  if (nilai) {
-    const na = Math.max(nilai.ngabenAyu.taraf, nilai.pawiwahanAyu.taraf);
-    const nl = Math.max(nilai.ngabenAla.taraf, nilai.pawiwahanAla.taraf);
-    if (na > ayu.bobot) { ayu.bobot = na; ayu.dewasa = ['kolom Ngaben/Pawiwahan']; }
-    if (nl > ala.bobot) { ala.bobot = nl; ala.dewasa = ['kolom Ngaben/Pawiwahan']; }
+  if (kolom) {
+    if (kolom.ayu > ayu.bobot) { ayu.bobot = kolom.ayu; ayu.dewasa = [kolom.nama]; }
+    if (kolom.ala > ala.bobot) { ala.bobot = kolom.ala; ala.dewasa = [kolom.nama]; }
   }
   const selisih = ayu.bobot - ala.bobot;
   let kode, teks;
@@ -183,6 +181,47 @@ export function alahDeningAlah(daftar, nilai) {
   else if (selisih < 0) { kode = 'ala-menang'; teks = `Ala unggul — bobot ${ala.bobot} mengalahkan Ayu bobot ${ayu.bobot}`; }
   else { kode = 'seimbang'; teks = `Seimbang — keduanya berbobot ${ayu.bobot}, perlu pertimbangan peranda`; }
   return { ayu, ala, selisih, kode, teks };
+}
+
+/**
+ * PUTUSAN PER KEPERLUAN.
+ *
+ * Kaidah alah dening alah dijalankan terpisah untuk tiap keperluan, sebab satu
+ * dewasa bisa berbeda nadanya menurut yadnya yang dituju — ada yang ayu untuk
+ * Dewa Yadnya tetapi ala untuk Manusa Yadnya. Menggabungkan semuanya menjadi
+ * satu angka akan menyembunyikan perbedaan itu.
+ *
+ * - umum      : seluruh dewasa + kedua kolom Excel
+ * - ngaben    : dewasa yang menyinggung Pitra Yadnya + kolom Ngaben
+ * - pawiwahan : dewasa yang menyinggung Manusa Yadnya + kolom Pawiwahan
+ * - dewa/rsi/bhuta : dewasa yang menyinggung yadnya itu (tanpa kolom, sebab
+ *   berkas Excel hanya menyediakan kolom untuk Ngaben dan Pawiwahan)
+ */
+export function putusanKeperluan(dewasa, nilai) {
+  // Untuk satu yadnya, nada dewasa ditentukan oleh kalimat yang menyebut
+  // yadnya itu — bukan oleh sifat keseluruhannya.
+  const saring = (kunci) => dewasa
+    .map((d) => {
+      const nada = yadnyaDewasa(d.keterangan)[kunci];
+      return nada ? { ...d, sifat: nada === 'ala' ? 1 : 0 } : null;
+    })
+    .filter(Boolean);
+
+  const out = {
+    umum: alahDeningAlah(dewasa, {
+      nama: 'kolom Ngaben/Pawiwahan',
+      ayu: Math.max(nilai.ngabenAyu.taraf, nilai.pawiwahanAyu.taraf),
+      ala: Math.max(nilai.ngabenAla.taraf, nilai.pawiwahanAla.taraf),
+    }),
+    ngaben: alahDeningAlah(saring('pitra'), {
+      nama: 'kolom Ngaben', ayu: nilai.ngabenAyu.taraf, ala: nilai.ngabenAla.taraf,
+    }),
+    pawiwahan: alahDeningAlah(saring('manusa'), {
+      nama: 'kolom Pawiwahan', ayu: nilai.pawiwahanAyu.taraf, ala: nilai.pawiwahanAla.taraf,
+    }),
+  };
+  for (const k of ['dewa', 'rsi', 'bhuta']) out[k] = alahDeningAlah(saring(k), null);
+  return out;
 }
 
 /** Terapkan "Rule of Decision" penyusun untuk menyimpulkan mutu hari. */
@@ -223,7 +262,7 @@ export function bulan(tahun, bln) {
       nilai, adaCatatan: jmlCatatan > 0, putusan: putusan(nilai),
       jumlahDewasa: dewasa.length,
       kesimpulan: kesimpulanDewasa(dewasa),
-      alahDeningAlah: alahDeningAlah(dewasa, nilai),
+      keperluan: putusanKeperluan(dewasa, nilai),
       // Fase bulan: tradisional (kolom penanggalan) dan astronomis (hasil audit
       // penyusun). Keduanya dikirim supaya selisihnya kelihatan, bukan disamarkan.
       purnama: dasar.purnama, tilem: dasar.tilem,

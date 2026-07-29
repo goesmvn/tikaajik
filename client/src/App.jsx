@@ -275,11 +275,12 @@ function Kalender({ meta, tanggal, setTanggal, bolehSunting }) {
           <MiniKalender bln={bln} geser={geserBulan} tanggal={tanggal} hariIni={hariIni} pilih={pilihTanggal} />
 
           <div className="kartu">
-            <h3>Kesimpulan hari terpilih</h3>
+            <h3>Putusan hari terpilih</h3>
             {detail && <>
-              <Simpul k={detail.kesimpulan} />
-              <div style={{ fontSize: '.74rem', color: 'var(--tulis3)', textAlign: 'center', margin: '.2rem 0 .5rem' }}>
-                Ayu {detail.kesimpulan.ayu} · Ala {detail.kesimpulan.ala} · dari {detail.dewasa.length} dewasa
+              <PutusanKeperluan k={detail.keperluan} ringkas />
+              <div style={{ fontSize: '.72rem', color: 'var(--tulis3)', textAlign: 'center', margin: '.3rem 0 .5rem' }}>
+                Angka = bobot terkuat (1 Hitam · 2 Coklat · 3 Hijau · 4 Biru),
+                menurut kaidah alah dening alah. Dari {detail.dewasa.length} dewasa.
               </div>
               <div className="blnbaris" style={{ justifyContent: 'center', marginBottom: '.4rem' }}>
                 <BulanFase tp={detail.tp} ukuran={20} />
@@ -288,7 +289,6 @@ function Kalender({ meta, tanggal, setTanggal, bolehSunting }) {
               </div>
               <Strip n={detail.nilai} meta={meta} />
               <div style={{ height: '.6rem' }} />
-              <AlahDeningAlah a={detail.alahDeningAlah} ringkas />
               <RinciKeperluan d={detail} meta={meta} />
               <button className="btn bukapenuh" onClick={() => setPopup(true)}>Lihat keterangan lengkap</button>
               <div style={{ height: '.5rem' }} />
@@ -492,6 +492,46 @@ function AlahDeningAlah({ a, ringkas }) {
       </div>
       <div className={`adaputusan p-${a.kode}`}>{a.teks}</div>
     </div>
+  );
+}
+
+
+const KEPERLUAN = [
+  ['umum', 'Umum', 'Seluruh dewasa hari itu + kedua kolom Excel'],
+  ['ngaben', 'Ngaben', 'Pitra Yadnya — dewasa yang menyinggungnya + kolom Ngaben'],
+  ['pawiwahan', 'Pawiwahan', 'Manusa Yadnya — dewasa yang menyinggungnya + kolom Pawiwahan'],
+  ['dewa', 'Dewa Yadnya', 'Piodalan, ngenteg linggih'],
+  ['rsi', 'Rsi Yadnya', 'Madiksa, mawinten'],
+  ['bhuta', 'Bhuta Yadnya', 'Caru, tawur'],
+];
+
+/**
+ * Putusan alah dening alah, dipisah per keperluan. Satu hari dapat berbeda
+ * putusannya untuk Ngaben dan untuk Pawiwahan, jadi tidak diringkas jadi
+ * satu angka.
+ */
+function PutusanKeperluan({ k, ringkas }) {
+  if (!k) return null;
+  const label = { 'ayu-menang': 'Ayu unggul', 'ala-menang': 'Ala unggul',
+    'seimbang': 'Seimbang', 'netral': 'Tanpa penanda' };
+  return (
+    <table className="kpt">
+      <thead><tr><th>Keperluan</th><th>Ayu</th><th>Ala</th><th>Putusan</th></tr></thead>
+      <tbody>
+        {KEPERLUAN.map(([kunci, nama, jelas]) => {
+          const a = k[kunci]; if (!a) return null;
+          if (ringkas && a.kode === 'netral' && kunci !== 'umum') return null;
+          return (
+            <tr key={kunci} className={kunci === 'umum' ? 'utamabaris' : ''}>
+              <td title={jelas}>{nama}</td>
+              <td className={`bb ${a.selisih > 0 ? 'unggul' : ''}`}>{a.ayu.bobot || '–'}</td>
+              <td className={`bb ${a.selisih < 0 ? 'unggul' : ''}`}>{a.ala.bobot || '–'}</td>
+              <td><span className={`kpv p-${a.kode}`}>{label[a.kode]}</span></td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
   );
 }
 
@@ -707,9 +747,16 @@ function DetailHari({ d, meta, muatUlang, bolehSunting, tutup }) {
       </div>
 
       {pesan && <div className={`putusan p-${pesan[0] === 'ok' ? 'sangat-baik' : 'pantang'}`}>{pesan[1]}</div>}
-      {/* Alah dening alah menjadi vonis utama: ia menimbang bobot seluruh
-          dewasa, sedangkan putusan lama hanya membaca kolom Ngaben/Pawiwahan. */}
-      <AlahDeningAlah a={d.alahDeningAlah} />
+      {/* Putusan dipisah per keperluan: hari yang sama bisa berbeda hasilnya
+          untuk Ngaben dan untuk Pawiwahan. */}
+      <div style={{ fontWeight: 700, margin: '.2rem 0 .4rem' }}>Putusan menurut keperluan</div>
+      <PutusanKeperluan k={d.keperluan} />
+      <p style={{ fontSize: '.74rem', color: 'var(--tulis2)', margin: '.1rem 0 .7rem' }}>
+        Angka menunjukkan <b>bobot terkuat</b> tiap pihak — 1 Hitam, 2 Coklat, 3 Hijau, 4 Biru.
+        Menurut kaidah <b>alah dening alah</b>, bobot lebih tinggi mengalahkan yang lebih rendah;
+        banyaknya dewasa tidak menentukan.
+      </p>
+      <AlahDeningAlah a={d.keperluan.umum} />
       <div className={`putusan p-${d.putusan.kode}`} style={{ fontSize: '.86rem' }}>
         <span style={{ display: 'block', fontFamily: "'Lora',serif", fontWeight: 400,
           fontSize: '.72rem', textTransform: 'uppercase', letterSpacing: '.08em', opacity: .8 }}>
