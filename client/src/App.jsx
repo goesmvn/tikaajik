@@ -96,7 +96,7 @@ export default function App() {
               <button className="btn" onClick={keluar}>Keluar</button>
             </>) : (<>
               <div><div className="nm">Belum masuk</div><div className="pr">hanya dapat membaca</div></div>
-              <button className="btn utama" onClick={() => setLayarMasuk(true)}>Masuk</button>
+              <button className="btn aksi" onClick={() => setLayarMasuk(true)}>Masuk</button>
             </>)}
           </div>
         </div>
@@ -107,6 +107,39 @@ export default function App() {
         {tab === 'tika' && <div className="utama"><PapanTika /></div>}
         {tab === 'kelola' && bolehSunting && <div className="utama"><Kelola meta={meta} saya={saya} /></div>}
         {tab === 'panduan' && <div className="utama"><Panduan meta={meta} /></div>}
+
+        <footer className="kaki">
+          <div className="kakiisi">
+            <div>
+              <div className="kakimerek">Tika Digital<span>Wariga · Padewasan Bali</span></div>
+              <p>
+                Kalender padewasan Bali yang menghitung sendiri Wewaran dan Wuku,
+                sehingga berlaku untuk tahun mana pun.
+              </p>
+            </div>
+            <div>
+              <h4>Sumber Data</h4>
+              <p>
+                Berkas <i>Semara Tika Digital.xlsx</i> susunan<br />
+                <b>Ida Bagus Ngurah Semara Manuaba</b><br />
+                Grya Apuan, Bangli — hasil audit manual satu siklus Metonic (19 tahun).
+              </p>
+            </div>
+            <div>
+              <h4>Cakupan</h4>
+              <p>
+                {meta.jumlahDewasa} dewasa · data terverifikasi{' '}
+                {fmt(meta.rentangExcel.mulai)} — {fmt(meta.rentangExcel.sampai)}.<br />
+                Di luar rentang itu, tanggal Bali ditandai <b>proyeksi</b> dan menunggu
+                penetapan rapat peranda.
+              </p>
+            </div>
+          </div>
+          <div className="kakibawah">
+            Kesimpulan lima tingkat dan penggolongan Panca Yadnya adalah perhitungan
+            turunan, bukan angka yang tertulis pada berkas asli.
+          </div>
+        </footer>
       </div>
     </div>
   );
@@ -138,7 +171,7 @@ function Masuk({ selesai, batal }) {
         <input type="password" autoComplete="current-password" value={f.sandi}
           onChange={(e) => setF({ ...f, sandi: e.target.value })} />
         <div className="baris" style={{ marginTop: '1.1rem' }}>
-          <button type="submit" className="btn utama" disabled={sibuk}>{sibuk ? 'Memeriksa…' : 'Masuk'}</button>
+          <button type="submit" className="btn aksi" disabled={sibuk}>{sibuk ? 'Memeriksa…' : 'Masuk'}</button>
           {batal && <button type="button" className="btn" onClick={batal}>Kembali ke kalender</button>}
         </div>
       </form>
@@ -173,7 +206,7 @@ function GantiSandi({ wajib, selesai, batal }) {
           onChange={(e) => setF({ ...f, ulangi: e.target.value })} />
         <p className="sub" style={{ marginTop: '.5rem' }}>Sesudah diganti, Anda akan diminta masuk kembali.</p>
         <div className="baris">
-          <button type="submit" className="btn utama">Simpan</button>
+          <button type="submit" className="btn aksi">Simpan</button>
           {batal && <button type="button" className="btn" onClick={batal}>Batal</button>}
         </div>
       </form>
@@ -188,7 +221,6 @@ function Kalender({ meta, tanggal, setTanggal, bolehSunting }) {
   const [hari, setHari] = useState([]);
   const [detail, setDetail] = useState(null);
   const [pekan, setPekan] = useState([]);
-  const [keperluan, setKeperluan] = useState('pawiwahan');
   const [tampil, setTampil] = useState('bulan');
   const [sibuk, setSibuk] = useState(false);
   const [popup, setPopup] = useState(false);
@@ -225,8 +257,6 @@ function Kalender({ meta, tanggal, setTanggal, bolehSunting }) {
   useEffect(muatPekan, [muatPekan]);
 
   const hariIni = iso(new Date());
-  const kAyu = keperluan === 'ngaben' ? 'ngabenAyu' : 'pawiwahanAyu';
-  const kAla = keperluan === 'ngaben' ? 'ngabenAla' : 'pawiwahanAla';
 
   const bukaTanggal = (t) => { pilihTanggal(t); setPopup(true); };
   const pilihTanggal = (t) => {
@@ -274,22 +304,6 @@ function Kalender({ meta, tanggal, setTanggal, bolehSunting }) {
                 </div>}
           </div>
 
-          <div className="kartu">
-            <h3>Sebaran bulan ini</h3>
-            <Sebaran hari={hari} kAyu={kAyu} kAla={kAla} meta={meta} />
-          </div>
-
-          <div className="kartu">
-            <h3>Keperluan</h3>
-            <div className="baris">
-              {[['pawiwahan', 'Pawiwahan'], ['ngaben', 'Ngaben']].map(([v, l]) => (
-                <button key={v} className={`btn ${keperluan === v ? 'on' : ''}`} onClick={() => setKeperluan(v)}>{l}</button>
-              ))}
-            </div>
-            <p className="sub" style={{ margin: '.6rem 0 0', fontSize: '.78rem' }}>
-              Menentukan pita Ayu/Ala yang ditampilkan pada kalender.
-            </p>
-          </div>
         </div>
 
         <div className="utama">
@@ -329,14 +343,14 @@ function Kalender({ meta, tanggal, setTanggal, bolehSunting }) {
 
           {!sibuk && tampil === 'bulan' && (
             <TampilBulan hari={hari} bln={bln} tanggal={tanggal} hariIni={hariIni}
-              kAyu={kAyu} kAla={kAla} meta={meta} pilih={bukaTanggal} />
+              meta={meta} pilih={bukaTanggal} />
           )}
           {!sibuk && tampil === 'pekan' && (
             <TampilPekan pekan={pekan} tanggal={tanggal} hariIni={hariIni}
-              kAyu={kAyu} kAla={kAla} meta={meta} pilih={bukaTanggal} />
+              meta={meta} pilih={bukaTanggal} />
           )}
           {!sibuk && tampil === 'hari' && detail && (<>
-            <TampilHari d={detail} kAyu={kAyu} kAla={kAla} meta={meta} />
+            <TampilHari d={detail} meta={meta} />
             <button className="navbtn utamai bukapenuh" onClick={() => setPopup(true)}>
               Lihat keterangan lengkap
             </button>
@@ -513,40 +527,7 @@ function MiniKalender({ bln, geser, tanggal, hariIni, pilih }) {
   );
 }
 
-function Sebaran({ hari, kAyu, kAla, meta }) {
-  if (!hari.length) return <div className="muat">Memuat…</div>;
-  const kel = [
-    ['Sangat baik', 'var(--ayu)', (h) => h.nilai[kAyu].taraf >= 3 && h.nilai[kAla].taraf === 0],
-    ['Baik', '#7BC47F', (h) => h.nilai[kAyu].taraf > 0 && h.nilai[kAla].taraf === 0 && !(h.nilai[kAyu].taraf >= 3)],
-    ['Perlu timbang', 'var(--dua)', (h) => h.nilai[kAyu].taraf > 0 && h.nilai[kAla].taraf > 0],
-    ['Pantangan', 'var(--ala)', (h) => h.nilai[kAyu].taraf === 0 && h.nilai[kAla].taraf > 0],
-  ];
-  return (<>
-    {kel.map(([nama, warna, uji]) => {
-      const n = hari.filter(uji).length;
-      return (
-        <div className="bar" key={nama}>
-          <span>{nama}</span>
-          <span className="jalur"><span className="isi" style={{ width: `${(n / hari.length) * 100}%`, background: warna }} /></span>
-          <span className="ang">{n}</span>
-        </div>
-      );
-    })}
-    <p className="sub" style={{ margin: '.5rem 0 0', fontSize: '.76rem' }}>Dari {hari.length} hari.</p>
-  </>);
-}
-
-function PitaNilai({ h, kAyu, kAla, meta }) {
-  const A = h.nilai[kAyu].taraf, L = h.nilai[kAla].taraf;
-  return (
-    <div className="pita">
-      <span className={`pitab ${A ? 'ayu' : 'kosong'}`}>AYU {A ? meta.taraf[A].nama : '—'}</span>
-      <span className={`pitab ${L ? 'ala' : 'kosong'}`}>ALA {L ? meta.taraf[L].nama : '—'}</span>
-    </div>
-  );
-}
-
-function TampilBulan({ hari, bln, tanggal, hariIni, kAyu, kAla, meta, pilih }) {
+function TampilBulan({ hari, bln, tanggal, hariIni, meta, pilih }) {
   const depan = (new Date(bln.t, bln.b - 1, 1).getDay() + 6) % 7;
   return (
     <div className="bulangrid">
@@ -580,7 +561,7 @@ function TampilBulan({ hari, bln, tanggal, hariIni, kAyu, kAla, meta, pilih }) {
   );
 }
 
-function TampilPekan({ pekan, tanggal, hariIni, kAyu, kAla, meta, pilih }) {
+function TampilPekan({ pekan, tanggal, hariIni, meta, pilih }) {
   if (!pekan.length) return <div className="muat">Memuat…</div>;
   const gaya = { gridTemplateColumns: `repeat(${pekan.length}, minmax(0,1fr))` };
   return (<>
@@ -618,7 +599,7 @@ function TampilPekan({ pekan, tanggal, hariIni, kAyu, kAla, meta, pilih }) {
   </>);
 }
 
-function TampilHari({ d, kAyu, kAla, meta }) {
+function TampilHari({ d, meta }) {
   return (
     <div className="harigrid" style={{ gridTemplateColumns: '1fr' }}>
       <div className="harikepala ini">
@@ -1048,7 +1029,7 @@ function DialogPenilaian({ tanggal, awal, meta, tutup, selesai }) {
         <label className="fl">Keterangan</label>
         <textarea value={teks} onChange={(e) => setTeks(e.target.value)} placeholder="Keterangan hari…" />
         <div className="baris" style={{ marginTop: '1rem' }}>
-          <button className="btn utama" onClick={simpan}>Simpan</button>
+          <button className="btn aksi" onClick={simpan}>Simpan</button>
           <button className="btn" onClick={tutup}>Batal</button>
           <button className="btn bahaya" style={{ marginLeft: 'auto' }}
             onClick={async () => { try { await api.penilaianHapus(tanggal, awal.jenis, awal.sisi); selesai(); } catch (e) { setGalat(e.message); } }}>
@@ -1196,7 +1177,7 @@ function KelolaPengguna({ saya }) {
         atas nama pemakainya pada Riwayat Perubahan.
       </div>
       <div className="baris" style={{ marginBottom: '.9rem' }}>
-        <button className="btn utama" onClick={() => setForm({ ...PENGGUNA_KOSONG })}>+ Tambah Pengguna</button>
+        <button className="btn aksi" onClick={() => setForm({ ...PENGGUNA_KOSONG })}>+ Tambah Pengguna</button>
       </div>
       <div className="hitung">{data.length} pengguna</div>
       <div className="gulir">
@@ -1254,7 +1235,7 @@ function KelolaPengguna({ saya }) {
               atau mengubah peran akan mengakhiri sesi pengguna itu di semua perangkat.
             </p>
             <div className="baris" style={{ marginTop: '1rem' }}>
-              <button className="btn utama" onClick={simpan}>Simpan</button>
+              <button className="btn aksi" onClick={simpan}>Simpan</button>
               <button className="btn" onClick={() => setForm(null)}>Batal</button>
             </div>
           </div>
@@ -1291,7 +1272,7 @@ function KelolaDewasa() {
       {pesan && <div className={`pesan ${pesan[0]}`}>{pesan[1]}</div>}
       <div className="baris" style={{ marginBottom: '.9rem' }}>
         <input type="text" style={{ flex: 1, minWidth: '13rem' }} placeholder="Cari dewasa…" value={cari} onChange={(e) => setCari(e.target.value)} />
-        <button className="btn utama" onClick={() => setForm({ ...KOSONG })}>+ Tambah Dewasa</button>
+        <button className="btn aksi" onClick={() => setForm({ ...KOSONG })}>+ Tambah Dewasa</button>
       </div>
       <div className="hitung">{data.length} dewasa</div>
       <div className="gulir">
@@ -1340,7 +1321,7 @@ function KelolaDewasa() {
             <textarea value={form.keterangan} onChange={(e) => setForm({ ...form, keterangan: e.target.value })}
               placeholder="Contoh: Ayu anggen pawiwahan. Ala anggen matetanduran." />
             <div className="baris" style={{ marginTop: '1rem' }}>
-              <button className="btn utama" onClick={simpan}>Simpan</button>
+              <button className="btn aksi" onClick={simpan}>Simpan</button>
               <button className="btn" onClick={() => setForm(null)}>Batal</button>
             </div>
           </div>
@@ -1379,7 +1360,7 @@ function KelolaSasih() {
       </div>
       <label className="fl">Alasan / dasar keputusan</label>
       <input type="text" value={form.alasan} onChange={(e) => setForm({ ...form, alasan: e.target.value })} placeholder="mis. Keputusan rapat peranda 12 Mei 2046" />
-      <div className="baris" style={{ margin: '.8rem 0 1.2rem' }}><button className="btn utama" onClick={simpan}>Simpan Koreksi</button></div>
+      <div className="baris" style={{ margin: '.8rem 0 1.2rem' }}><button className="btn aksi" onClick={simpan}>Simpan Koreksi</button></div>
 
       <div className="hitung">{data.length} koreksi tercatat</div>
       <div className="gulir">

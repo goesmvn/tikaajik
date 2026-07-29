@@ -21,6 +21,7 @@
   --t1:#2B2B2B; --t2:#C25A10; --t3:#2E7D32; --t4:#1565C0;
   /* fase bulan */
   --purnama:#E8B33A; --tilem:#2F3A56;
+  --sela:1.1rem;                      /* jarak tepi kartu utama */
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html{font-size:var(--base)}
@@ -90,11 +91,13 @@ body{background:var(--laman);color:var(--tulis);
 
 /* ---------- utama ---------- */
 .utama{background:var(--kartu);border:1px solid var(--garis);border-radius:.9rem;overflow:hidden;
-  box-shadow:0 1px 3px rgba(31,26,22,.05);padding:0 1.1rem 1.1rem}
+  box-shadow:0 1px 3px rgba(31,26,22,.05);
+  /* jarak kiri, kanan, dan bawah dibuat sama persis supaya tepinya simetris */
+  padding:0 var(--sela) var(--sela)}
 /* kepala marun seperti rujukan */
 .judulbar{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;
   background:linear-gradient(135deg,#8E1F1F,#A93636);color:#fff;
-  margin:0 -1.1rem 1rem;padding:1rem 1.1rem}
+  margin:0 calc(var(--sela) * -1) var(--sela);padding:1rem var(--sela)}
 .judulbar h2{font-family:'Eczar',serif;font-size:1.7rem;font-weight:700;flex:1;min-width:11rem;color:#fff}
 .segmen{display:flex;gap:.25rem;background:rgba(255,255,255,.16);border-radius:.6rem;padding:.22rem}
 .segmen button{height:2.3rem;padding:0 1rem;border-radius:.45rem;border:0;background:transparent;
@@ -148,6 +151,7 @@ body{background:var(--laman);color:var(--tulis);
 
 /* ---------- tampilan bulan ---------- */
 .bulangrid{display:grid;grid-template-columns:repeat(7,1fr);gap:.4rem}
+.utama > p.sub:last-child{margin:var(--sela) 0 0}
 .bsel{background:var(--kartu);border:1px solid var(--garis);border-radius:.6rem;padding:.4rem .45rem;
   min-height:6.6rem;cursor:pointer;display:flex;flex-direction:column;gap:.2rem;text-align:left;
   font-family:inherit;color:inherit;position:relative;transition:.12s}
@@ -261,8 +265,9 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--merah2);outline-
 .btn:hover:not(:disabled){border-color:var(--merah2);color:var(--merah)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .btn.on{background:var(--merah2);color:#fff;border-color:var(--merah2)}
-.btn.utama{background:var(--ayu);color:#fff;border-color:var(--ayu)}
-.btn.utama:hover{background:var(--ayuT);color:#fff}
+/* diberi nama sendiri agar tidak bertabrakan dengan wadah .utama */
+.btn.aksi{background:var(--ayu);color:#fff;border-color:var(--ayu)}
+.btn.aksi:hover{background:var(--ayuT);color:#fff}
 .btn.bahaya{background:#fff;color:var(--alaT);border-color:var(--ala)}
 .btn.bahaya:hover{background:var(--ala);color:#fff}
 .baris{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
@@ -401,3 +406,18 @@ h3{font-family:'Eczar',serif;font-weight:600;font-size:1.02rem;margin:1rem 0 .5r
   .ikonnav button{padding:0 .8rem}
   .judulbar h2{font-size:1.35rem}
 }
+
+/* ---------- kaki halaman ---------- */
+.kaki{margin-top:1.2rem;background:var(--kartu);border:1px solid var(--garis);
+  border-radius:.9rem;overflow:hidden;box-shadow:0 1px 3px rgba(31,26,22,.05)}
+.kakiisi{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));
+  gap:1.4rem;padding:1.3rem var(--sela)}
+.kakiisi h4{font-family:'Eczar',serif;font-weight:700;font-size:.9rem;color:var(--merah);
+  margin-bottom:.4rem;letter-spacing:.03em}
+.kakiisi p{font-size:.8rem;color:var(--tulis2);line-height:1.65}
+.kakimerek{font-family:'Eczar',serif;font-weight:800;font-size:1.15rem;margin-bottom:.4rem}
+.kakimerek span{display:block;font-family:'Lora',serif;font-weight:400;font-size:.58rem;
+  letter-spacing:.22em;color:var(--merah2);text-transform:uppercase;margin-top:.1rem}
+.kakibawah{border-top:1px solid var(--garis);background:var(--kartu2);
+  padding:.75rem var(--sela);font-size:.75rem;color:var(--tulis3);text-align:center;line-height:1.6}
+@media(max-width:760px){ .kakiisi{gap:1rem;padding:1rem .8rem} }
