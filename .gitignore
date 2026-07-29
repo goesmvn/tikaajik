@@ -1,0 +1,14 @@
+# Basis data — memuat hash kata sandi & token sesi. JANGAN pernah diunggah.
+server/data/*.db
+server/data/*.db-shm
+server/data/*.db-wal
+
+# Dependensi & hasil build
+node_modules/
+client/dist/
+
+# Lain-lain
+*.log
+.DS_Store
+.env
+.env.*

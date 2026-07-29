@@ -1,0 +1,10 @@
+{
+  "name": "tika-digital",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "validasi": "node validate-rules.mjs"
+  }
+}
