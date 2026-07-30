@@ -110,11 +110,24 @@ export function lunarAt(i) {
 export function gradesAt(i) {
   const j = mod(i, MET);
   const g = E.grades, t = E.gtexts;
+  const mapT = (val) => {
+    if (!val) return 0;
+    // Map Excel 1-4 to 9 steps:
+    // 1 -> 2 (Nistaning Madya)
+    // 2 -> 4 (Madyaning Nista)
+    // 3 -> 6 (Madyaning Utama)
+    // 4 -> 8 (Utamaning Madya)
+    if (val === 1) return 2;
+    if (val === 2) return 4;
+    if (val === 3) return 6;
+    if (val === 4) return 8;
+    return val;
+  };
   return {
-    ngabenAyu: { taraf: g.na[j], teks: t.na[j] || '' },
-    ngabenAla: { taraf: g.nl[j], teks: t.nl[j] || '' },
-    pawiwahanAyu: { taraf: g.pa[j], teks: t.pa[j] || '' },
-    pawiwahanAla: { taraf: g.pl[j], teks: t.pl[j] || '' },
+    ngabenAyu: { taraf: mapT(g.na[j]), teks: t.na[j] || '' },
+    ngabenAla: { taraf: mapT(g.nl[j]), teks: t.nl[j] || '' },
+    pawiwahanAyu: { taraf: mapT(g.pa[j]), teks: t.pa[j] || '' },
+    pawiwahanAla: { taraf: mapT(g.pl[j]), teks: t.pl[j] || '' },
     proyeksi: i < 0 || i >= EXCEL_DAYS,
   };
 }
@@ -147,9 +160,14 @@ export function dayInfo(i) {
 
 export const TARAF = [
   null,
-  { nama: 'Hitam', dasar: 'Wewaran' },
-  { nama: 'Coklat', dasar: 'Wewaran + Wuku' },
-  { nama: 'Hijau', dasar: 'Wewaran + Wuku + Tanggal/Panglong' },
-  { nama: 'Biru', dasar: 'Wewaran + Wuku + Tanggal/Panglong + Sasih' },
+  { nama: 'Nistaning Nista', dasar: 'Wewaran Minor' },
+  { nama: 'Nistaning Madya', dasar: 'Wewaran Utama' },
+  { nama: 'Nistaning Utama', dasar: 'Kombinasi Wewaran' },
+  { nama: 'Madyaning Nista', dasar: 'Wewaran + Wuku' },
+  { nama: 'Madyaning Madya', dasar: 'Wewaran + Wuku + Tanggal/Panglong' },
+  { nama: 'Madyaning Utama', dasar: 'Wewaran + Wuku + Tanggal/Panglong + Sasih' },
+  { nama: 'Utamaning Nista', dasar: 'Wewaran + Wuku + Tanggal/Panglong + Sasih + Dauh' },
+  { nama: 'Utamaning Madya', dasar: 'Wewaran + Wuku + Tanggal/Panglong + Sasih + Dauh + Sanghyang Trio Dasa Saksi' },
+  { nama: 'Utamaning Utama', dasar: 'Gabungan Aspek Paling Utama' },
 ];
 export const EXCEL_RANGE = { mulai: 0, sampai: EXCEL_DAYS - 1, metonic: MET };

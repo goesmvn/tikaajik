@@ -62,12 +62,21 @@ export function parseKondisi(teks) {
     if (/\bPurnama\b/i.test(s)) { r.purnama = true; dikenali++; }
     if (/\bTilem\b/i.test(s)) { r.tilem = true; dikenali++; }
 
+    // Dauh
+    if (/\bDauh\b/i.test(s)) { r.dauh = true; dikenali++; }
+
+    // Sanghyang Trio Dasa Saksi
+    if (/\b(sanghyang\s+trio\s+dasa\s+saksi|trio\s+dasa\s+saksi|sanghyang\s+saksi|saksi)\b/i.test(s)) {
+      r.saksi = true;
+      dikenali++;
+    }
+
     // kata per kata
     const sisa = s.replace(rePen, ' ').replace(rePang, ' ');
     for (let w of sisa.split(/[\s,:/]+/)) {
       w = norm(w.replace(/[^A-Za-zÀ-ÿ]/g, '').trim());
       if (!w || w.length < 3) continue;
-      if (/^(purnama|tilem|penanggal|pangelong|panglong|sasih|wuku|miwah|utawi)$/i.test(w)) continue;
+      if (/^(purnama|tilem|penanggal|pangelong|panglong|sasih|wuku|miwah|utawi|dauh|saksi|sanghyang|trio|dasa)$/i.test(w)) continue;
       // Wuku & Sasih tetap bertipe khusus (namanya tidak bertabrakan).
       // Nama wewaran disimpan generik karena satu nama bisa dimiliki
       // beberapa sistem sekaligus (mis. 'Sri' = Astawara / Caturwara / Dasawara).
@@ -130,10 +139,22 @@ export function berlaku(alternatif, hari) {
  */
 export function bobotAlternatif(r) {
   let b = 0;
-  if (r.wara) b = Math.max(b, 1);
-  if (r.wuku) b = Math.max(b, 2);
-  if (r.penanggal || r.panglong || r.purnama || r.tilem) b = Math.max(b, 3);
-  if (r.sasih) b = Math.max(b, 4);
+  // Wewaran minor/utama/gabungan (Nistaning Nista, Nistaning Madya, Nistaning Utama)
+  if (r.wara) {
+    const hasUtama = r.wara.some((w) => ['Redite','Soma','Anggara','Buda','Wraspati','Sukra','Saniscara','Umanis','Paing','Pon','Wage','Keliwon'].map((x) => x.toLowerCase()).includes(w.toLowerCase()));
+    b = Math.max(b, hasUtama ? 2 : 1);
+    if (r.wara.length > 1) b = Math.max(b, 3);
+  }
+  // Wewaran + Wuku -> Madyaning Nista (4)
+  if (r.wuku) b = Math.max(b, 4);
+  // Penanggal/Panglong -> Madyaning Madya (5)
+  if (r.penanggal || r.panglong || r.purnama || r.tilem) b = Math.max(b, 5);
+  // Sasih -> Madyaning Utama (6)
+  if (r.sasih) b = Math.max(b, 6);
+  // Dauh -> Utamaning Nista (7)
+  if (r.dauh) b = Math.max(b, 7);
+  // Saksi -> Utamaning Madya (8)
+  if (r.saksi) b = Math.max(b, 8);
   return b;
 }
 

@@ -7,6 +7,10 @@ server/data/*.db-wal
 node_modules/
 client/dist/
 
+# Dokploy
+.env
+*.db
+
 # Lain-lain
 *.log
 .DS_Store

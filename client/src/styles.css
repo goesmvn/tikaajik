@@ -18,7 +18,25 @@
   --dua:#B5651A; --duaT:#8A4A0B; --duabg:#FBEEDD;
   --net:#7C7268; --netT:#5C5349; --netbg:#F0EDE8;
   /* taraf penyusun — di atas latar terang, Hitam boleh benar-benar hitam */
-  --t1:#2B2B2B; --t2:#C25A10; --t3:#2E7D32; --t4:#1565C0;
+  --ta1: #E8F5E9;
+  --ta2: #C8E6C9;
+  --ta3: #A5D6A7;
+  --ta4: #81C784;
+  --ta5: #66BB6A;
+  --ta6: #4CAF50;
+  --ta7: #388E3C;
+  --ta8: #2E7D32;
+  --ta9: #1B5E20;
+  --tl1: #FFEBEE;
+  --tl2: #FFCDD2;
+  --tl3: #EF9A9A;
+  --tl4: #E57373;
+  --tl5: #EF5350;
+  --tl6: #F44336;
+  --tl7: #E53935;
+  --tl8: #D32F2F;
+  --tl9: #B71C1C;
+  --t1: var(--ta1); --t2: var(--ta2); --t3: var(--ta3); --t4: var(--ta4); --t5: var(--ta5); --t6: var(--ta6); --t7: var(--ta7); --t8: var(--ta8); --t9: var(--ta9);
   /* fase bulan */
   --purnama:#E8B33A; --tilem:#2F3A56;
   --sela:1.1rem;                      /* jarak tepi kartu utama */
@@ -166,15 +184,18 @@ body{background:var(--laman);color:var(--tulis);
 .bsel.pilih{border-color:var(--merah2);box-shadow:0 0 0 2px rgba(194,47,47,.3)}
 .bsel.ini{border-color:var(--merah2);border-width:2px;background:#FFF9F9}
 .bsel.luar{opacity:.4;background:var(--kartu2)}
-.bsel .no{font-family:'Eczar',serif;font-weight:700;font-size:1.3rem;line-height:1}
+.bsel .no{font-family:'Eczar',serif;font-weight:700;font-size:1.8rem;line-height:1}
 .bsel .kt{font-size:.68rem;color:var(--tulis3);line-height:1.3}
 
 /* ---------- strip 4 warna ---------- */
 .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;height:.8rem;
   border:1px solid var(--garis2);border-radius:.2rem;overflow:hidden;background:var(--garis2)}
 .strip i{display:block;background:#fff}
-.strip i.t1{background:#2B2B2B} .strip i.t2{background:#C25A10}
-.strip i.t3{background:#2E7D32} .strip i.t4{background:#1565C0}
+.strip i.t1{background:var(--ta1)} .strip i.t2{background:var(--ta2)}
+.strip i.t3{background:var(--ta3)} .strip i.t4{background:var(--ta4)}
+.strip i.t5{background:var(--ta5)} .strip i.t6{background:var(--ta6)}
+.strip i.t7{background:var(--ta7)} .strip i.t8{background:var(--ta8)}
+.strip i.t9{background:var(--ta9)}
 .strip i.kosong{background:repeating-linear-gradient(45deg,#fff 0 3px,#EFEAE2 3px 6px)}
 .stripket{display:grid;grid-template-columns:1fr 1fr;gap:1px;font-size:.54rem;
   color:var(--tulis3);text-align:center;letter-spacing:.04em;margin-top:.1rem;line-height:1.1}

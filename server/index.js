@@ -226,7 +226,7 @@ const server = http.createServer(async (req, res) => {
       if (!TGL.test(dari || '')) return galat(res, 'Parameter "dari" harus YYYY-MM-DD');
       return json(res, svc.cariHariBaik({
         dari, jenis: q.get('jenis') === 'ngaben' ? 'ngaben' : 'pawiwahan',
-        tarafMin: Math.min(4, Math.max(1, +q.get('taraf') || 3)),
+        tarafMin: Math.min(9, Math.max(1, +q.get('taraf') || 3)),
         tanpaAla: q.get('tanpaAla') !== '0',
       }));
     }
@@ -311,7 +311,7 @@ const server = http.createServer(async (req, res) => {
       if (!['ngaben', 'pawiwahan'].includes(b.jenis)) return galat(res, 'Jenis harus ngaben/pawiwahan');
       if (!['ayu', 'ala'].includes(b.sisi)) return galat(res, 'Sisi harus ayu/ala');
       const taraf = +b.taraf;
-      if (!(taraf >= 0 && taraf <= 4)) return galat(res, 'Taraf harus 0-4');
+      if (!(taraf >= 0 && taraf <= 9)) return galat(res, 'Taraf harus 0-9');
       const lama = db.prepare('SELECT * FROM penilaian WHERE tanggal=? AND jenis=? AND sisi=?')
         .get(b.tanggal, b.jenis, b.sisi);
       db.prepare(`INSERT INTO penilaian (tanggal,jenis,sisi,taraf,teks,oleh) VALUES (?,?,?,?,?,?)

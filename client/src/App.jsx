@@ -9,7 +9,10 @@ const SAPTA = [['Redite', 'Minggu'], ['Soma', 'Senin'], ['Anggara', 'Selasa'], [
 const SASIH = ['', 'Kasa', 'Karo', 'Katiga', 'Kapat', 'Kalima', 'Kanem', 'Kapitu', 'Kaulu',
   'Kasanga', 'Kadasa', 'Jyestha', 'Sadha'];
 const SIFAT = ['Ayu', 'Ala', 'Ayu & Ala', 'Netral'];
-const WARNA_TARAF = ['transparent', 'var(--t1)', 'var(--t2)', 'var(--t3)', 'var(--t4)'];
+// Warna taraf dibedakan antara Ayu dan Ala sesuai tingkat taraf 9-step
+const WARNA_TARAF_AYU = ['transparent', '#E8F5E9', '#C8E6C9', '#A5D6A7', '#81C784', '#66BB6A', '#4CAF50', '#388E3C', '#2E7D32', '#1B5E20'];
+const WARNA_TARAF_ALA = ['transparent', '#FFEBEE', '#FFCDD2', '#EF9A9A', '#E57373', '#EF5350', '#F44336', '#E53935', '#D32F2F', '#B71C1C'];
+const WARNA_TARAF = ['transparent', 'var(--t1)', 'var(--t2)', 'var(--t3)', 'var(--t4)', 'var(--t5)', 'var(--t6)', 'var(--t7)', 'var(--t8)', 'var(--t9)'];
 
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const dariIso = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
@@ -329,10 +332,10 @@ function Kalender({ meta, tanggal, setTanggal, bolehSunting }) {
           <div className="striplegenda">
             <b style={{ color: 'var(--tulis)' }}>Strip 4 warna:</b>
             <span>Ngaben Ayu · Ngaben Ala · Pawiwahan Ayu · Pawiwahan Ala</span>
-            {[1, 2, 3, 4].map((t) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((t) => (
               <span className="kk" key={t}>
-                <i className={`t${t}`} style={{ background: ['', '#2B2B2B', '#C25A10', '#2E7D32', '#1565C0'][t] }} />
-                {meta.taraf[t].nama}
+                <i className={`t${t}`} style={{ background: WARNA_TARAF_AYU[t] }} />
+                {meta.taraf[t]?.nama || 'taraf ' + t}
               </span>
             ))}
             <span className="kk"><i style={{ background: 'repeating-linear-gradient(45deg,#fff 0 3px,#EFEAE2 3px 6px)' }} />kosong</span>
@@ -619,7 +622,7 @@ function TampilBulan({ hari, bln, tanggal, hariIni, meta, pilih }) {
             })()}</span>
             <span className="blnbaris"><span className="no">{h.hariKe}</span>
               <BulanFase tp={h.tp} ukuran={13} /></span>
-            <span className="kt">{pendek(h.tp)}<br />{h.wuku}{h.proyeksi ? ' · proyeksi' : ''}</span>
+            <span className="kt">{pendek(h.tp)}<br />{h.pancawara} · {h.wuku}{h.proyeksi ? ' · proyeksi' : ''}</span>
             <span style={{ display: 'flex', gap: '.15rem', flexWrap: 'wrap' }}><Fase h={h} kecil /></span>
             <span style={{ marginTop: 'auto' }}>
               <Strip n={h.nilai} meta={meta} ket={false} />
@@ -656,13 +659,12 @@ function TampilPekan({ pekan, tanggal, hariIni, meta, pilih }) {
       {pekan.map((h) => (
         <div key={h.tanggal} onClick={() => pilih(h.tanggal)}
           className={`harikolom ${h.tanggal === tanggal ? 'pilih' : ''} ${h.proyeksi ? 'proyeksi' : ''}`}>
-          {h.dewasa.slice(0, 6).map((x) => (
+          {h.dewasa.map((x) => (
             <div key={x.id} className={`blok s${x.sifat}`}>
               <div className="jd">{x.nama}</div>
               <div className="sb">{SIFAT[x.sifat]}</div>
             </div>
           ))}
-          {h.dewasa.length > 6 && <div className="lagi">+{h.dewasa.length - 6} lagi</div>}
           {h.dewasa.length === 0 && <div className="lagi">tanpa dewasa khusus</div>}
         </div>
       ))}
@@ -708,22 +710,25 @@ function DetailHari({ d, meta, muatUlang, bolehSunting, tutup }) {
     ['sangaNama', 'Sangawara'], ['ingsadNama', 'Ing. Sadina'], ['dasaNama', 'Dasawara'],
     ['saptawara', 'Saptawara'], ['pancawara', 'Pancawara'], ['wuku', 'Wuku'], ['pertithi', 'Pertithi']];
 
-  const slot = (label, nilai, jenis, sisi) => (
-    <div className="kotak" style={{ display: 'block' }}>
-      <div className="baris" style={{ marginBottom: '.25rem' }}>
-        <b>{label}</b>
-        {nilai.taraf > 0
-          ? <span className="cip" style={{ background: WARNA_TARAF[nilai.taraf], margin: 0 }}>{meta.taraf[nilai.taraf].nama}</span>
-          : <span style={{ color: '#6B6577', fontSize: '.82rem' }}>tanpa penanda</span>}
-        {nilai.dikoreksi && <span style={{ fontSize: '.72rem', color: '#7A5A08' }}>disunting peranda</span>}
-        {bolehSunting && <button className="tombolputih" style={{ marginLeft: 'auto', padding: '.3rem .7rem', minHeight: '2.2rem' }}
-          onClick={() => setSunting({ jenis, sisi, taraf: nilai.taraf, teks: nilai.teks })}>Ubah</button>}
+  const slot = (label, nilai, jenis, sisi) => {
+    const warnaTaraf = sisi === 'ayu' ? WARNA_TARAF_AYU : WARNA_TARAF_ALA;
+    return (
+      <div className="kotak" style={{ display: 'block' }}>
+        <div className="baris" style={{ marginBottom: '.25rem' }}>
+          <b>{label}</b>
+          {nilai.taraf > 0
+            ? <span className="cip" style={{ background: warnaTaraf[nilai.taraf], color: (sisi === 'ala' ? nilai.taraf >= 4 : nilai.taraf >= 7) ? '#fff' : 'inherit', margin: 0 }}>{meta.taraf[nilai.taraf].nama}</span>
+            : <span style={{ color: '#6B6577', fontSize: '.82rem' }}>tanpa penanda</span>}
+          {nilai.dikoreksi && <span style={{ fontSize: '.72rem', color: '#7A5A08' }}>disunting peranda</span>}
+          {bolehSunting && <button className="tombolputih" style={{ marginLeft: 'auto', padding: '.3rem .7rem', minHeight: '2.2rem' }}
+            onClick={() => setSunting({ jenis, sisi, taraf: nilai.taraf, teks: nilai.teks })}>Ubah</button>}
+        </div>
+        <div style={{ fontSize: '.85rem', color: nilai.teks ? '#2B2833' : '#6B6577', fontStyle: nilai.teks ? 'normal' : 'italic' }}>
+          {nilai.teks || 'Tidak ada catatan.'}
+        </div>
       </div>
-      <div style={{ fontSize: '.85rem', color: nilai.teks ? '#2B2833' : '#6B6577', fontStyle: nilai.teks ? 'normal' : 'italic' }}>
-        {nilai.teks || 'Tidak ada catatan.'}
-      </div>
-    </div>
-  );
+    );
+  };
 
   const simpanCatatan = async () => {
     if (!catatan.trim()) return;
@@ -752,7 +757,7 @@ function DetailHari({ d, meta, muatUlang, bolehSunting, tutup }) {
       <div style={{ fontWeight: 700, margin: '.2rem 0 .4rem' }}>Putusan menurut keperluan</div>
       <PutusanKeperluan k={d.keperluan} />
       <p style={{ fontSize: '.74rem', color: 'var(--tulis2)', margin: '.1rem 0 .7rem' }}>
-        Angka menunjukkan <b>bobot terkuat</b> tiap pihak — 1 Hitam, 2 Coklat, 3 Hijau, 4 Biru.
+        Angka menunjukkan <b>bobot terkuat</b> tiap pihak — 1 Nistaning Nista sampai 9 Utamaning Utama.
         Menurut kaidah <b>alah dening alah</b>, bobot lebih tinggi mengalahkan yang lebih rendah;
         banyaknya dewasa tidak menentukan.
       </p>
@@ -791,8 +796,8 @@ function DetailHari({ d, meta, muatUlang, bolehSunting, tutup }) {
         </span>
         <span className="baris" style={{ marginLeft: 'auto' }}><Fase h={{
           ...d,
-          purnamaAstro: /Penanggal\s*15/i.test(d.tpAstronomis || ''),
-          tilemAstro: /Pang?e?long\s*15/i.test(d.tpAstronomis || ''),
+          purnamaAstro: d.purnamaAstro,
+          tilemAstro: d.tilemAstro,
         }} /></span>
       </div>
 
@@ -1111,10 +1116,10 @@ function DialogPenilaian({ tanggal, awal, meta, tutup, selesai }) {
         <p className="sub">{fmt(tanggal)}</p>
         {galat && <div className="pesan galat">{galat}</div>}
         <label className="fl">Taraf</label>
-        <div className="baris" style={{ marginBottom: '.9rem' }}>
-          {[0, 1, 2, 3, 4].map((t) => (
+        <div className="baris" style={{ marginBottom: '.9rem', flexWrap: 'wrap', gap: '.4rem' }}>
+          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((t) => (
             <button key={t} className={`btn ${taraf === t ? 'on' : ''}`} onClick={() => setTaraf(t)}>
-              {t === 0 ? 'Kosong' : meta.taraf[t].nama}
+              {t === 0 ? 'Kosong' : meta.taraf[t]?.nama || 'Taraf ' + t}
             </button>
           ))}
         </div>
@@ -1188,7 +1193,7 @@ function HariBaik({ meta, buka }) {
         </div></div>
         <div><label className="fl">Taraf Ayu paling rendah</label>
           <select value={f.taraf} onChange={(e) => setF({ ...f, taraf: +e.target.value })}>
-            {[1, 2, 3, 4].map((t) => <option key={t} value={t}>{meta.taraf[t].nama} — taraf {t}</option>)}
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((t) => <option key={t} value={t}>{meta.taraf[t]?.nama || 'Taraf ' + t} — taraf {t}</option>)}
           </select></div>
         <div><label className="fl">Syarat</label><div className="baris">
           <button className={`btn ${f.tanpaAla ? 'on' : ''}`} onClick={() => setF({ ...f, tanpaAla: true })}>Tanpa Ala</button>
@@ -1201,10 +1206,10 @@ function HariBaik({ meta, buka }) {
         <>
           <div className="hitung">{hasil.length >= 150 ? '150 hari pertama' : `${hasil.length} hari`} memenuhi syarat</div>
           {hasil.map((h) => (
-            <div key={h.tanggal} className="kartu s0" style={{ borderLeftColor: WARNA_TARAF[h.taraf], cursor: 'pointer' }} onClick={() => buka(h.tanggal)}>
+            <div key={h.tanggal} className="kartu s0" style={{ borderLeftColor: WARNA_TARAF_AYU[h.taraf], cursor: 'pointer' }} onClick={() => buka(h.tanggal)}>
               <div className="nm">{fmtP(h.tanggal)}
-                <span className="pil" style={{ background: WARNA_TARAF[h.taraf] }}>Ayu {h.tarafNama}</span>
-                {h.tarafAla > 0 && <span className="pil" style={{ background: 'var(--alafg)' }}>Ala {h.tarafAlaNama}</span>}
+                <span className="pil" style={{ background: WARNA_TARAF_AYU[h.taraf], color: h.taraf >= 7 ? '#fff' : '#2B2B2B' }}>Ayu {h.tarafNama}</span>
+                {h.tarafAla > 0 && <span className="pil" style={{ background: WARNA_TARAF_ALA[h.tarafAla], color: h.tarafAla >= 4 ? '#fff' : '#2B2B2B' }}>Ala {h.tarafAlaNama}</span>}
                 {h.proyeksi && <span className="tag sumber">proyeksi</span>}</div>
               <div className="desc">{h.teks || '—'}</div>
               <div className="meta">{h.saptawara} · {h.pancawara} · {h.wuku} · {h.tp} · Sasih {namaSasih(h.sasih)}</div>
@@ -1501,23 +1506,25 @@ function Panduan({ meta }) {
       <p className="sub">Ringkasan panduan interpretasi sebagaimana ditulis penyusun pada lembar aslinya.</p>
 
       <h3>Arti warna dan taraf</h3>
-      <p>Kuat-lemahnya sebuah hari ditentukan oleh berapa banyak unsur Wariga yang menguncinya:</p>
+      <p>Kuat-lemahnya sebuah hari ditentukan oleh berapa banyak unsur Wariga yang menguncinya (warna dibedakan antara Ayu/Arah Positif dan Ala/Arah Pantangan):</p>
       <div className="grid2" style={{ marginTop: '.7rem' }}>
-        {[1, 2, 3, 4].map((t) => (
-          <div key={t} className="kartu s3" style={{ borderLeftColor: WARNA_TARAF[t] }}>
-            <div className="nm"><span className="pil" style={{ background: WARNA_TARAF[t] }}>{meta.taraf[t].nama}</span> taraf {t}</div>
-            <div className="desc">
-              <b>Bila Ayu:</b> {['kebaikan paling ringan', 'kebaikan menengah', 'kebaikan tinggi', 'kebaikan paling sempurna'][t - 1]}.<br />
-              <b>Bila Ala:</b> {['bahaya paling ringan', 'bahaya menengah', 'bahaya tinggi', 'bahaya paling berat'][t - 1]}.<br />
-              <i>Dasar: {meta.taraf[t].dasar}</i>
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((t) => (
+          <div key={t} className="kartu s3" style={{ borderLeftColor: WARNA_TARAF_AYU[t], marginBottom: '1rem' }}>
+            <div className="nm">
+              <span className="pil" style={{ background: WARNA_TARAF_AYU[t], color: t >= 7 ? '#fff' : '#2B2B2B', marginRight: '.5rem' }}>Ayu: {meta.taraf[t]?.nama || 'Taraf ' + t}</span>
+              <span className="pil" style={{ background: WARNA_TARAF_ALA[t], color: t >= 4 ? '#fff' : '#2B2B2B' }}>Ala: {meta.taraf[t]?.nama || 'Taraf ' + t}</span>
+            </div>
+            <div className="desc" style={{ marginTop: '.5rem' }}>
+              <b>Bila Ayu:</b> {['Kebaikan Nistaning Nista (Unsur Teramat Ringan)', 'Kebaikan Nistaning Madya (Pertumbuhan Awal)', 'Kebaikan Nistaning Utama (Kebaikan Mulai Terasa)', 'Kebaikan Madyaning Nista (Tingkat Menengah Awal)', 'Kebaikan Madyaning Madya (Stabil/Wajar/Seimbang)', 'Kebaikan Madyaning Utama (Kebaikan Menengah Kuat)', 'Kebaikan Utamaning Nista (Matang/Kuat/Berbobot)', 'Kebaikan Utamaning Madya (Sangat Padat/Berwibawa)', 'Kebaikan Utamaning Utama (Puncak Kesucian/Kemuliaan Mutlak)'][t - 1]}.<br />
+              <b>Bila Ala:</b> {['Bahaya Nistaning Nista (Sangat Tipis/Ringan/Kecil)', 'Bahaya Nistaning Madya (Mulai Ada Gesekan)', 'Bahaya Nistaning Utama (Potensi Hambatan Terasa)', 'Bahaya Madyaning Nista (Tingkat Kerawanan Menengah Rendah)', 'Bahaya Madyaning Madya (Kerawanan Menengah/Seimbang)', 'Bahaya Madyaning Utama (Kerawanan Menengah Tinggi)', 'Bahaya Utamaning Nista (Kandungan Energi Buruk Cukup Kuat)', 'Bahaya Utamaning Madya (Potensi Bahaya Sangat Nyata)', 'Bahaya Utamaning Utama (Puncak Pantangan Terberat/Wajib Dihindari Mutlak)'][t - 1]}.<br />
+              <i>Dasar: {meta.taraf[t]?.dasar || ''}</i>
             </div>
           </div>
         ))}
       </div>
 
-      <h3>Cara mengambil keputusan</h3>
-      <p><b>1. Taraf lebih tinggi menang.</b> Bila pada hari yang sama Ayu bertaraf Hijau sedangkan Ala hanya Coklat, hari itu masih layak dipergunakan — kebaikan dengan unsur lebih lengkap menetralisir pantangan yang unsurnya lebih sedikit.</p>
-      <p><b>2. Hari terbaik tanpa cela.</b> Hari paling utama adalah bila kolom Ayu terisi (terutama Hijau atau Biru) sedangkan kolom Ala kosong sama sekali.</p>
+      <p><b>1. Taraf lebih tinggi menang.</b> Bila pada hari yang sama Ayu bertaraf Madyaning Madya sedangkan Ala hanya Madyaning Nista, hari itu masih layak dipergunakan — kebaikan dengan unsur lebih lengkap menetralisir pantangan yang unsurnya lebih sedikit.</p>
+      <p><b>2. Hari terbaik tanpa cela.</b> Hari paling utama adalah bila kolom Ayu terisi (terutama Madyaning Madya atau Utamaning Nista) sedangkan kolom Ala kosong sama sekali.</p>
 
       <h3>Sampai tahun berapa aplikasi ini berlaku?</h3>
       <p><b>Wewaran dan Wuku: selamanya.</b> Siklus Pawukon 210 hari dihitung sendiri oleh aplikasi dan telah diuji cocok sempurna terhadap 33 siklus penuh dalam berkas Excel — tanpa satu pun selisih.</p>
