@@ -1448,7 +1448,7 @@ function PapanTika() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 17rem', gap: '.7rem', alignItems: 'start' }}>
+      <div className="tikagrid">
         <div className="tikaluar">
           <div className="tikapapan">
             <div className="tikahias" />
