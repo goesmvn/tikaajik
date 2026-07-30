@@ -67,11 +67,11 @@ export default function App() {
     Pastikan peladen berjalan: <code>node server/index.js</code></div></div></div>;
   if (!meta || !saya) return <div className="wrap"><div className="app"><div className="muat">Memuat…</div></div></div>;
 
-  if (saya.masuk && saya.wajibGanti)
+  if (!saya.masuk)
+    return <Masuk selesai={() => { setLayarMasuk(false); setSaya(null); muatSesi(); }} />;
+
+  if (saya.wajibGanti)
     return <div className="wrap"><div className="app"><GantiSandi wajib selesai={() => { setSaya(null); muatSesi(); }} /></div></div>;
-  if (layarMasuk || (saya.wajibMasuk && !saya.masuk))
-    return <div className="wrap"><div className="app"><Masuk batal={saya.wajibMasuk ? null : () => setLayarMasuk(false)}
-      selesai={() => { setLayarMasuk(false); setSaya(null); muatSesi(); }} /></div></div>;
 
   const bolehSunting = saya.masuk && (saya.peran === 'admin' || saya.peran === 'peranda');
   const TAB = [['kalender', '🗓', 'Kalender'], ['cari', '🔍', 'Cari Dewasa'], ['baik', '✦', 'Hari Baik'], ['tika', '▦', 'Papan Tika'],

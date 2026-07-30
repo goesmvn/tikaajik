@@ -382,11 +382,11 @@ export const TINGKAT = [
 /** Panca Yadnya beserta kata kunci pengenalnya di dalam teks keterangan. */
 export const YADNYA = [
   { kunci: 'dewa', nama: 'Dewa Yadnya', jelas: 'Upacara kepada Hyang Widhi — piodalan, ngenteg linggih',
-    pola: /dewa\s*yadnya|piodalan|pujawali|ngenteg|palinggih|sanggah|pelinggih|bhakti ring|ngaturang bhakti/i },
+    pola: /dewa\s*yadnya|piodalan|pujawali|ngenteg|palinggih|sanggah|pelinggih|bhakti|pamarajan|panti/i },
   { kunci: 'pitra', nama: 'Pitra Yadnya (Ngaben)', jelas: 'Upacara kepada leluhur — ngaben, atiwa-tiwa, memukur',
     pola: /pitra\s*yadnya|ngaben|atiwa|mamukur|memukur|ngelungah|nyekah|leluhur|pengabenan/i },
-  { kunci: 'rsi', nama: 'Rsi Yadnya', jelas: 'Upacara kepada pandita — madiksa, mawinten',
-    pola: /rsi\s*yadnya|resi\s*yadnya|diksa|madiksa|mawinten|winten|pandita/i },
+  { kunci: 'rsi', nama: 'Rsi Yadnya', jelas: 'Upacara kepada pandita — madiksa, mawinten, perguruan',
+    pola: /rsi\s*yadnya|resi\s*yadnya|diksa|madiksa|mawinten|winten|pandita|belajar|sekolah|perguruan/i },
   { kunci: 'manusa', nama: 'Manusa Yadnya (Pawiwahan)', jelas: 'Upacara manusia — pawiwahan, metatah, otonan',
     pola: /manusa\s*yadnya|pawiwahan|wiwaha|nikah|perkawinan|metatah|mapandes|mapendes|mepusung|otonan|nelu bulan/i },
   { kunci: 'bhuta', nama: 'Bhuta Yadnya', jelas: 'Upacara kepada bhuta kala — caru, tawur',
