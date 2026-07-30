@@ -287,7 +287,7 @@ function Kalender({ meta, tanggal, setTanggal, bolehSunting }) {
     <>
       <div className="rangka">
         <div className="kolomkiri">
-          <MiniKalender bln={bln} geser={geserBulan} tanggal={tanggal} hariIni={hariIni} pilih={pilihTanggal} />
+          <MiniKalender bln={bln} setBln={setBln} geser={geserBulan} tanggal={tanggal} hariIni={hariIni} pilih={pilihTanggal} />
 
           <div className="kartu">
             <h3>Putusan hari terpilih</h3>
@@ -323,18 +323,38 @@ function Kalender({ meta, tanggal, setTanggal, bolehSunting }) {
         </div>
 
         <div className="utama">
-          <div className="judulbar">
+          <div className="judulbar" style={{ gap: '.4rem', flexWrap: 'wrap' }}>
             <button className="navbtn" onClick={() => geserBulan(-1)} aria-label="Bulan sebelumnya">‹</button>
-            <h2>{BULAN[bln.b - 1]} {bln.t}
-              {hari.length > 0 && <small style={{ display: 'block', fontFamily: "'Lora',serif",
-                fontWeight: 400, fontSize: '.6rem', letterSpacing: '.16em', textTransform: 'uppercase',
-                color: '#F0D2D2', marginTop: '.15rem' }}>
-                Sasih {namaSasih(hari[Math.floor(hari.length / 2)].sasih)}
-              </small>}
-            </h2>
+
+            {/* Selector Bulan & Tahun Masehi */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.3rem' }}>
+              <select value={bln.b} onChange={(e) => setBln({ ...bln, b: +e.target.value })}
+                aria-label="Pilih Bulan"
+                style={{ fontSize: '1rem', fontWeight: 700, padding: '.2rem .4rem', borderRadius: '.3rem', border: '1px solid var(--garis2)', background: 'var(--kartu)' }}>
+                {BULAN.map((m, idx) => (
+                  <option key={idx + 1} value={idx + 1}>{m}</option>
+                ))}
+              </select>
+
+              <select value={bln.t} onChange={(e) => setBln({ ...bln, t: +e.target.value })}
+                aria-label="Pilih Tahun"
+                style={{ fontSize: '1rem', fontWeight: 700, padding: '.2rem .4rem', borderRadius: '.3rem', border: '1px solid var(--garis2)', background: 'var(--kartu)' }}>
+                {Array.from({ length: 151 }, (_, i) => 1950 + i).map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+
             <button className="navbtn" onClick={() => geserBulan(1)} aria-label="Bulan berikutnya">›</button>
             <button className="navbtn utamai" onClick={() => { const d = new Date(); setBln({ t: d.getFullYear(), b: d.getMonth() + 1 }); setTanggal(iso(d)); }}>Hari Ini</button>
-            <div className="segmen">
+            
+            {hari.length > 0 && (
+              <span style={{ fontFamily: "'Lora',serif", fontSize: '.75rem', color: '#F0D2D2', marginLeft: '.2rem' }}>
+                Sasih {namaSasih(hari[Math.floor(hari.length / 2)].sasih)}
+              </span>
+            )}
+
+            <div className="segmen" style={{ marginLeft: 'auto' }}>
               {[['bulan', 'Bulan'], ['pekan', 'Pekan'], ['hari', 'Hari']].map(([v, l]) => (
                 <button key={v} className={tampil === v ? 'on' : ''} onClick={() => setTampil(v)}>{l}</button>
               ))}
@@ -602,7 +622,7 @@ function Simpul({ k, kecil }) {
   );
 }
 
-function MiniKalender({ bln, geser, tanggal, hariIni, pilih }) {
+function MiniKalender({ bln, setBln, geser, tanggal, hariIni, pilih }) {
   const jml = new Date(bln.t, bln.b, 0).getDate();
   const depan = (new Date(bln.t, bln.b - 1, 1).getDay() + 6) % 7;   // Senin dulu
   const sel = [];
@@ -613,11 +633,18 @@ function MiniKalender({ bln, geser, tanggal, hariIni, pilih }) {
   const tgl = (d) => `${bln.t}-${String(bln.b).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   return (
     <div className="kartu">
-      <div className="miniatas">
-        <b>{BULAN[bln.b - 1]} {bln.t}</b>
-        <span className="baris">
-          <button className="bulat" style={{ width: '2.2rem', height: '2.2rem' }} onClick={() => geser(-1)} aria-label="Bulan sebelumnya">‹</button>
-          <button className="bulat" style={{ width: '2.2rem', height: '2.2rem' }} onClick={() => geser(1)} aria-label="Bulan berikutnya">›</button>
+      <div className="miniatas" style={{ gap: '.2rem' }}>
+        <select value={bln.b} onChange={(e) => setBln({ ...bln, b: +e.target.value })}
+          style={{ fontSize: '.8rem', fontWeight: 700, padding: '.1rem .2rem' }}>
+          {BULAN.map((m, idx) => <option key={idx + 1} value={idx + 1}>{m.slice(0, 3)}</option>)}
+        </select>
+        <select value={bln.t} onChange={(e) => setBln({ ...bln, t: +e.target.value })}
+          style={{ fontSize: '.8rem', fontWeight: 700, padding: '.1rem .2rem' }}>
+          {Array.from({ length: 151 }, (_, i) => 1950 + i).map((y) => <option key={y} value={y}>{y}</option>)}
+        </select>
+        <span className="baris" style={{ marginLeft: 'auto' }}>
+          <button className="bulat" style={{ width: '1.8rem', height: '1.8rem', fontSize: '.8rem' }} onClick={() => geser(-1)} aria-label="Bulan sebelumnya">‹</button>
+          <button className="bulat" style={{ width: '1.8rem', height: '1.8rem', fontSize: '.8rem' }} onClick={() => geser(1)} aria-label="Bulan berikutnya">›</button>
         </span>
       </div>
       <table className="mini">
