@@ -884,7 +884,7 @@ function TampilBulan({ hari, bln, tanggal, hariIni, meta, pilih }) {
             })()}</span>
             <span className="blnbaris"><span className="no">{h.hariKe}</span>
               <BulanFase tp={h.tp} ukuran={13} /></span>
-            <span className="kt">{pendek(h.tp)}<br />{h.pancawara} · {h.wuku}{h.proyeksi ? ' · proyeksi' : ''}</span>
+            <span className="kt">{pendek(h.tp)}<br />{h.pancawara} · {h.wuku} · Ingkel {h.ingsadNama || '—'}{h.proyeksi ? ' · proyeksi' : ''}</span>
             <span style={{ display: 'flex', gap: '.15rem', flexWrap: 'wrap' }}><Fase h={h} kecil /></span>
             <span style={{ marginTop: 'auto' }}>
               <Strip n={h.nilai} meta={meta} ket={false} />
@@ -1014,7 +1014,7 @@ function DetailHari({ d, meta, muatUlang, bolehSunting, tutup }) {
 
   const WARA = [['ekaNama', 'Eka Wara'], ['dwiNama', 'Dwi Wara'], ['triNama', 'Tri Wara'],
     ['caturNama', 'Catur Wara'], ['sadNama', 'Sadwara'], ['astaNama', 'Astawara'],
-    ['sangaNama', 'Sangawara'], ['ingsadNama', 'Ing. Sadina'], ['dasaNama', 'Dasawara'],
+    ['sangaNama', 'Sangawara'], ['ingsadNama', 'Ingkel / Sadina'], ['dasaNama', 'Dasawara'],
     ['saptawara', 'Saptawara'], ['pancawara', 'Pancawara'], ['wuku', 'Wuku'], ['pertithi', 'Pertithi']];
 
   const slot = (label, nilai, jenis, sisi) => {
