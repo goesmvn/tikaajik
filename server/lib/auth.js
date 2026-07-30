@@ -145,20 +145,18 @@ export const cookieHapus = () =>
  */
 export function siapkanAdminPertama() {
   const adminPilihanSandi = process.env.TIKA_ADMIN_SANDI || 'mAnUAbA@8804';
+  const { garam, hash } = racikSandi(adminPilihanSandi);
+
   const adaAdmin = db.prepare("SELECT * FROM pengguna WHERE nama_pengguna = 'admin'").get();
 
   if (adaAdmin) {
-    // Pastikan kata sandi admin direset/disinkronkan bila env TIKA_RESET_ADMIN=1 atau saat pembaruan ini
-    if (process.env.TIKA_RESET_ADMIN === '1' || adminPilihanSandi) {
-      const { garam, hash } = racikSandi(adminPilihanSandi);
-      db.prepare("UPDATE pengguna SET garam = ?, sandi_hash = ?, wajib_ganti = 0 WHERE nama_pengguna = 'admin'")
-        .run(garam, hash);
-    }
+    // Selalu reset password admin ke adminPilihanSandi di server startup
+    db.prepare("UPDATE pengguna SET garam = ?, sandi_hash = ?, aktif = 1, wajib_ganti = 0 WHERE nama_pengguna = 'admin'")
+      .run(garam, hash);
     return null;
   }
 
-  const { garam, hash } = racikSandi(adminPilihanSandi);
-  db.prepare(`INSERT INTO pengguna (nama, nama_pengguna, sandi_hash, garam, peran, wajib_ganti)
-              VALUES (?,?,?,?,?,0)`).run('Pengelola', 'admin', hash, garam, 'admin');
+  db.prepare(`INSERT INTO pengguna (nama, nama_pengguna, sandi_hash, garam, peran, aktif, wajib_ganti)
+              VALUES (?,?,?,?,?,1,0)`).run('Pengelola', 'admin', hash, garam, 'admin');
   return { namaPengguna: 'admin', sandi: adminPilihanSandi };
 }
