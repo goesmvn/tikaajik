@@ -4,8 +4,15 @@ import { api } from './api.js';
 /* ---------------- alat bantu ---------------- */
 const BULAN = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli',
   'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-const SAPTA = [['Redite', 'Minggu'], ['Soma', 'Senin'], ['Anggara', 'Selasa'], ['Buda', 'Rabu'],
-  ['Wraspati', 'Kamis'], ['Sukra', 'Jumat'], ['Saniscara', 'Sabtu']];
+const SAPTA_DETAIL = [
+  { nama: 'Soma', hari: 'Senin', planet: 'Candra (Bulan)', dewa: 'Bhatara Candra', aksara: 'ᬲᬵᬫ', urip: 4 },
+  { nama: 'Anggara', hari: 'Selasa', planet: 'Anggara (Mars)', dewa: 'Bhatara Mangala', aksara: 'ᬅᬗ᭄ᬕᬭ', urip: 3 },
+  { nama: 'Buda', hari: 'Rabu', planet: 'Budha (Merkurius)', dewa: 'Bhatara Budha', aksara: 'ᬩᬸᬥ', urip: 7 },
+  { nama: 'Wraspati', hari: 'Kamis', planet: 'Wraspati (Yupiter)', dewa: 'Bhatara Brihaspati', aksara: 'ᬯ᭄ᬭᬲ᭄ᬧᬢᬶ', urip: 8 },
+  { nama: 'Sukra', hari: 'Jumat', planet: 'Sukra (Venus)', dewa: 'Bhatara Sukra', aksara: 'ᬲᬸᬓ᭄ᬭ', urip: 6 },
+  { nama: 'Saniscara', hari: 'Sabtu', planet: 'Saniscara (Saturnus)', dewa: 'Bhatara Sani', aksara: 'ᬲᬦᬶᬲ᭄ᬘᬭ', urip: 9 },
+  { nama: 'Redite', hari: 'Minggu', planet: 'Surya (Matahari)', dewa: 'Sanghyang Bhaskara', aksara: 'ᬭᬾᬤᬶᬢᬾ', urip: 5 }
+];
 const SASIH = ['', 'Kasa', 'Karo', 'Katiga', 'Kapat', 'Kalima', 'Kanem', 'Kapitu', 'Kaulu',
   'Kasanga', 'Kadasa', 'Jyestha', 'Sadha'];
 const SIFAT = ['Ayu', 'Ala', 'Ayu & Ala', 'Netral'];
@@ -821,9 +828,15 @@ function TampilBulan({ hari, bln, tanggal, hariIni, meta, pilih }) {
   const depan = (new Date(bln.t, bln.b - 1, 1).getDay() + 6) % 7;
   return (
     <div className="bulangrid">
-      {['Soma', 'Anggara', 'Buda', 'Wraspati', 'Sukra', 'Saniscara', 'Redite'].map((n, i) => (
-        <div key={n} className="harikepala"><div className="nm">{n}</div>
-          <div className="tg">{['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'][i]}</div></div>
+      {SAPTA_DETAIL.map((s) => (
+        <div key={s.nama} className="harikepala" title={`${s.nama} (${s.hari}) · Planet: ${s.planet} · Dewa: ${s.dewa} · Urip: ${s.urip}`}>
+          <div className="nm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.3rem' }}>
+            <span>{s.nama}</span>
+            <span style={{ fontSize: '.85rem', fontFamily: "'Noto Serif Balinese', serif", color: 'var(--brass, #C99A2E)' }}>{s.aksara}</span>
+          </div>
+          <div className="tg">{s.hari} · {s.planet.split(' ')[0]}</div>
+          <div style={{ fontSize: '.68rem', color: 'var(--tulis3)', marginTop: '.1rem' }}>{s.dewa}</div>
+        </div>
       ))}
       {Array.from({ length: depan }, (_, i) => <div key={'k' + i} className="bsel luar" />)}
       {hari.map((h) => {
