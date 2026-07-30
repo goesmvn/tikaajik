@@ -9,10 +9,22 @@ const SAPTA = [['Redite', 'Minggu'], ['Soma', 'Senin'], ['Anggara', 'Selasa'], [
 const SASIH = ['', 'Kasa', 'Karo', 'Katiga', 'Kapat', 'Kalima', 'Kanem', 'Kapitu', 'Kaulu',
   'Kasanga', 'Kadasa', 'Jyestha', 'Sadha'];
 const SIFAT = ['Ayu', 'Ala', 'Ayu & Ala', 'Netral'];
-// Warna taraf dibedakan antara Ayu dan Ala sesuai tingkat taraf 9-step
+/* Warna taraf dibedakan antara Ayu dan Ala sesuai tingkat taraf 9-step */
 const WARNA_TARAF_AYU = ['transparent', '#E8F5E9', '#C8E6C9', '#A5D6A7', '#81C784', '#66BB6A', '#4CAF50', '#388E3C', '#2E7D32', '#1B5E20'];
 const WARNA_TARAF_ALA = ['transparent', '#FFEBEE', '#FFCDD2', '#EF9A9A', '#E57373', '#EF5350', '#F44336', '#E53935', '#D32F2F', '#B71C1C'];
 const WARNA_TARAF = ['transparent', 'var(--t1)', 'var(--t2)', 'var(--t3)', 'var(--t4)', 'var(--t5)', 'var(--t6)', 'var(--t7)', 'var(--t8)', 'var(--t9)'];
+const TARAF_NAMA = [
+  'kosong',
+  'Nistaning Nista',
+  'Nistaning Madya',
+  'Nistaning Utama',
+  'Madyaning Nista',
+  'Madyaning Madya',
+  'Madyaning Utama',
+  'Utamaning Nista',
+  'Utamaning Madya',
+  'Utamaning Utama'
+];
 
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const dariIso = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
@@ -335,7 +347,7 @@ function Kalender({ meta, tanggal, setTanggal, bolehSunting }) {
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((t) => (
               <span className="kk" key={t}>
                 <i className={`t${t}`} style={{ background: WARNA_TARAF_AYU[t] }} />
-                {meta.taraf[t]?.nama || 'taraf ' + t}
+                {TARAF_NAMA[t]}
               </span>
             ))}
             <span className="kk"><i style={{ background: 'repeating-linear-gradient(45deg,#fff 0 3px,#EFEAE2 3px 6px)' }} />kosong</span>
@@ -611,14 +623,47 @@ function TampilBulan({ hari, bln, tanggal, hariIni, meta, pilih }) {
       ))}
       {Array.from({ length: depan }, (_, i) => <div key={'k' + i} className="bsel luar" />)}
       {hari.map((h) => {
+        // Tentukan intensitas warna line/border berdasarkan taraf ayu/ala
+        let gayaBatas = {};
+        if (h.nilai.ngabenAyu.taraf > 0 || h.nilai.pawiwahanAyu.taraf > 0) {
+          const tarafAyu = Math.max(h.nilai.ngabenAyu.taraf, h.nilai.pawiwahanAyu.taraf);
+          gayaBatas = { borderColor: WARNA_TARAF_AYU[tarafAyu], borderWidth: '2px' };
+        }
+        if (h.nilai.ngabenAla.taraf > 0 || h.nilai.pawiwahanAla.taraf > 0) {
+          const tarafAla = Math.max(h.nilai.ngabenAla.taraf, h.nilai.pawiwahanAla.taraf);
+          // Ala mewarnai garis tepi luar jika ada, atau menimpa ayu bila tingkatnya sangat tinggi
+          gayaBatas = { borderColor: WARNA_TARAF_ALA[tarafAla], borderWidth: '2px', ...gayaBatas, outline: `1px solid ${WARNA_TARAF_ALA[tarafAla]}` };
+        }
+
         return (
-          <button key={h.tanggal} className={`bsel ${h.tanggal === tanggal ? 'pilih' : ''} ${h.tanggal === hariIni ? 'ini' : ''}`}
+          <button key={h.tanggal} 
+            className={`bsel ${h.tanggal === tanggal ? 'pilih' : ''} ${h.tanggal === hariIni ? 'ini' : ''}`}
+            style={gayaBatas}
             onClick={() => pilih(h.tanggal)}>
             <span className="sudut">{(() => {
               const pen = /Penanggal\s*(\d+)/i.exec(h.tp || '');
               const pang = /Pang?e?long\s*(\d+)/i.exec(h.tp || '');
               const n = pen ? pen[1] : (pang ? pang[1] : null);
-              return n ? (<><i className={pen ? 'png' : 'pgl'} />{n}</>) : null;
+              const warnaSudut = pen ? '#C22F2F' : (pang ? '#3B6FB5' : 'transparent');
+              const teksWarna = (pen && pen[1] === '15') || (pang && pang[1] === '15') ? '#fff' : 'inherit';
+              const bgSudut = (pen && pen[1] === '15') ? '#C22F2F' : ((pang && pang[1] === '15') ? '#3B6FB5' : 'transparent');
+              return n ? (
+                <span className="no-sudut" style={{ 
+                  color: teksWarna, 
+                  background: bgSudut,
+                  borderColor: warnaSudut, 
+                  borderWidth: '1px', 
+                  borderStyle: 'solid',
+                  borderRadius: '50%',
+                  width: '1.2rem',
+                  height: '1.2rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '.68rem',
+                  fontWeight: 700
+                }}>{n}</span>
+              ) : null;
             })()}</span>
             <span className="blnbaris"><span className="no">{h.hariKe}</span>
               <BulanFase tp={h.tp} ukuran={13} /></span>
@@ -656,23 +701,44 @@ function TampilPekan({ pekan, tanggal, hariIni, meta, pilih }) {
       ))}
     </div>
     <div className="harigrid" style={{ ...gaya, marginTop: '.5rem' }}>
-      {pekan.map((h) => (
-        <div key={h.tanggal} onClick={() => pilih(h.tanggal)}
-          className={`harikolom ${h.tanggal === tanggal ? 'pilih' : ''} ${h.proyeksi ? 'proyeksi' : ''}`}>
-          {h.dewasa.map((x) => (
-            <div key={x.id} className={`blok s${x.sifat}`}>
-              <div className="jd">{x.nama}</div>
-              <div className="sb">{SIFAT[x.sifat]}</div>
-            </div>
-          ))}
-          {h.dewasa.length === 0 && <div className="lagi">tanpa dewasa khusus</div>}
-        </div>
-      ))}
+      {pekan.map((h) => {
+        let gayaBatas = {};
+        if (h.nilai.ngabenAyu.taraf > 0 || h.nilai.pawiwahanAyu.taraf > 0) {
+          const tarafAyu = Math.max(h.nilai.ngabenAyu.taraf, h.nilai.pawiwahanAyu.taraf);
+          gayaBatas = { borderColor: WARNA_TARAF_AYU[tarafAyu], borderWidth: '2px' };
+        }
+        if (h.nilai.ngabenAla.taraf > 0 || h.nilai.pawiwahanAla.taraf > 0) {
+          const tarafAla = Math.max(h.nilai.ngabenAla.taraf, h.nilai.pawiwahanAla.taraf);
+          gayaBatas = { borderColor: WARNA_TARAF_ALA[tarafAla], borderWidth: '2px', ...gayaBatas, outline: `1px solid ${WARNA_TARAF_ALA[tarafAla]}` };
+        }
+        return (
+          <div key={h.tanggal} onClick={() => pilih(h.tanggal)}
+            style={gayaBatas}
+            className={`harikolom ${h.tanggal === tanggal ? 'pilih' : ''} ${h.proyeksi ? 'proyeksi' : ''}`}>
+            {h.dewasa.map((x) => (
+              <div key={x.id} className={`blok s${x.sifat}`}>
+                <div className="jd">{x.nama}</div>
+                <div className="sb">{SIFAT[x.sifat]}</div>
+              </div>
+            ))}
+            {h.dewasa.length === 0 && <div className="lagi">tanpa dewasa khusus</div>}
+          </div>
+        );
+      })}
     </div>
   </>);
 }
 
 function TampilHari({ d, meta }) {
+  let gayaBatas = {};
+  if (d.nilai.ngabenAyu.taraf > 0 || d.nilai.pawiwahanAyu.taraf > 0) {
+    const tarafAyu = Math.max(d.nilai.ngabenAyu.taraf, d.nilai.pawiwahanAyu.taraf);
+    gayaBatas = { borderColor: WARNA_TARAF_AYU[tarafAyu], borderWidth: '2px' };
+  }
+  if (d.nilai.ngabenAla.taraf > 0 || d.nilai.pawiwahanAla.taraf > 0) {
+    const tarafAla = Math.max(d.nilai.ngabenAla.taraf, d.nilai.pawiwahanAla.taraf);
+    gayaBatas = { borderColor: WARNA_TARAF_ALA[tarafAla], borderWidth: '2px', ...gayaBatas, outline: `1px solid ${WARNA_TARAF_ALA[tarafAla]}` };
+  }
   return (
     <div className="harigrid" style={{ gridTemplateColumns: '1fr' }}>
       <div className="harikepala ini">
@@ -686,7 +752,7 @@ function TampilHari({ d, meta }) {
         <Strip n={d.nilai} meta={meta} />
         <Simpul k={d.kesimpulan} />
       </div>
-      <div className={`harikolom ${d.proyeksi ? 'proyeksi' : ''}`} style={{ cursor: 'default' }}>
+      <div className={`harikolom ${d.proyeksi ? 'proyeksi' : ''}`} style={{ cursor: 'default', ...gayaBatas }}>
         {d.dewasa.length === 0 && <div className="lagi">tanpa dewasa khusus</div>}
         {d.dewasa.map((x) => (
           <div key={x.id} className={`blok s${x.sifat}`}>
