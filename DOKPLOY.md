@@ -13,14 +13,17 @@ To build the client assets locally and serve them via Node.js server:
 
 ## Dokploy Setup Options
 
-### Option 1: Dockerfile (Recommended & Tested)
-Dokploy can build this automatically using the root `Dockerfile`.
-Ensure port mapping/forwarding points to port `8787` (defined in the Dockerfile).
+### Option 1: Docker Compose (Highly Recommended)
+Dokploy supports deployments via `docker-compose.yml`. This setup includes persistent volume mounting for the SQLite database.
 
-### Option 2: Nixpacks / Buildpack Deployment
-You can deploy using the `nixpacks.toml` configuration included in this repository.
+1. Deploy on Dokploy as a **Compose** application.
+2. The configuration is defined in the root `docker-compose.yml` file.
+3. It will automatically build the `Dockerfile` and mount a persistent volume (`tika-data`) to prevent data loss.
+
+### Option 2: Dockerfile
+Ensure port mapping/forwarding points to port `8787` (defined in the Dockerfile).
 
 **Required Environment Variables**:
 - `PORT`: `8787`
-- `TIKA_DB`: `/app/server/data/tika.db` (Persistent volume mount recommended for SQLite database inside `/app/server/data`)
-- `TIKA_HTTPS`: `1` (If using SSL/HTTPS)
+- `TIKA_DB`: `/app/server/data/tika.db`
+- `TIKA_HTTPS`: `1`

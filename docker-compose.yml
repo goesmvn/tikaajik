@@ -1,0 +1,17 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8787:8787"
+    environment:
+      - PORT=8787
+      - TIKA_DB=/app/server/data/tika.db
+      - TIKA_HTTPS=1
+      - TIKA_WAJIB_MASUK=0
+    volumes:
+      - tika-data:/app/server/data
+
+volumes:
+  tika-data:
