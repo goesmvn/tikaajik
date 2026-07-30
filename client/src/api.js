@@ -37,4 +37,7 @@ export const api = {
   catatanTambah: (b) => minta('/api/catatan', { method: 'POST', body: b }),
   catatanHapus: (id) => minta(`/api/catatan/${id}`, { method: 'DELETE' }),
   riwayat: () => minta('/api/riwayat'),
+  // penanda harian dewasa (override)
+  penandaSimpan: (b) => minta('/api/penanda-dewasa', { method: 'POST', body: b }),
+  penandaList: (t) => minta(`/api/penanda-dewasa?tanggal=${t}`),
 };

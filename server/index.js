@@ -214,12 +214,12 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/hari') {
       const t = q.get('tanggal');
       if (!TGL.test(t || '')) return galat(res, 'Parameter "tanggal" harus YYYY-MM-DD');
-      return json(res, svc.hari(t));
+      return json(res, svc.hari(t, saya?.id));
     }
     if (p === '/api/bulan') {
       const th = +q.get('tahun'), bl = +q.get('bulan');
       if (!(th >= 1900 && th <= 3000) || !(bl >= 1 && bl <= 12)) return galat(res, 'tahun/bulan tidak sah');
-      return json(res, svc.bulan(th, bl));
+      return json(res, svc.bulan(th, bl, saya?.id));
     }
     if (p === '/api/hari-baik') {
       const dari = q.get('dari');
@@ -234,7 +234,12 @@ const server = http.createServer(async (req, res) => {
     /* ================= CRUD dewasa ================= */
     if (p === '/api/dewasa' && req.method === 'GET') {
       const cari = (q.get('cari') || '').toLowerCase();
-      let baris = db.prepare('SELECT * FROM dewasa ORDER BY nama').all();
+      let baris;
+      if (saya) {
+        baris = db.prepare('SELECT * FROM dewasa WHERE (pengguna_id IS NULL OR pengguna_id = ?) ORDER BY nama').all(saya.id);
+      } else {
+        baris = db.prepare('SELECT * FROM dewasa WHERE pengguna_id IS NULL ORDER BY nama').all();
+      }
       if (cari) baris = baris.filter((d) =>
         (d.nama + ' ' + d.kondisi + ' ' + d.keterangan).toLowerCase().includes(cari));
       return json(res, baris.map((d) => {
@@ -246,8 +251,8 @@ const server = http.createServer(async (req, res) => {
       const b = await badan(req);
       if (!b.nama?.trim()) return galat(res, 'Nama dewasa wajib diisi');
       if (!SIFAT.includes(+b.sifat)) return galat(res, 'Sifat harus 0-3');
-      const r = db.prepare('INSERT INTO dewasa (nama,kondisi,keterangan,sifat,asal) VALUES (?,?,?,?,?)')
-        .run(b.nama.trim(), b.kondisi || '', b.keterangan || '', +b.sifat, 'tambahan');
+      const r = db.prepare('INSERT INTO dewasa (nama,kondisi,keterangan,sifat,asal,pengguna_id) VALUES (?,?,?,?,?,?)')
+        .run(b.nama.trim(), b.kondisi || '', b.keterangan || '', +b.sifat, 'tambahan', saya ? saya.id : null);
       const id = Number(r.lastInsertRowid);
       catat('dewasa', id, 'tambah', null, b, oleh);
       svc.bersihkanCache();
@@ -257,6 +262,12 @@ const server = http.createServer(async (req, res) => {
       const id = +p.split('/')[3];
       const lama = db.prepare('SELECT * FROM dewasa WHERE id = ?').get(id);
       if (!lama) return galat(res, 'Dewasa tidak ditemukan', 404);
+      
+      // Jika bukan pembuatnya dan bukan admin, dilarang menyunting/menghapus
+      if (lama.pengguna_id && lama.pengguna_id !== (saya ? saya.id : null) && saya?.peran !== 'admin') {
+        return galat(res, 'Anda tidak berhak mengubah dewasa kustom milik pengguna lain.', 403);
+      }
+
       if (req.method === 'DELETE') {
         if (lama.asal === 'excel') {
           db.prepare("UPDATE dewasa SET aktif = 0, diubah = datetime('now') WHERE id = ?").run(id);
@@ -278,6 +289,42 @@ const server = http.createServer(async (req, res) => {
       catat('dewasa', id, 'ubah', lama, b, oleh);
       svc.bersihkanCache();
       return json(res, { ok: true, ...parseKondisi(b.kondisi ?? lama.kondisi) });
+    }
+
+    /* ================= penanda harian dewasa (kekeran desa) ================= */
+    if (p === '/api/penanda-dewasa' && req.method === 'POST') {
+      if (!saya) return galat(res, 'Silakan masuk terlebih dahulu.', 401);
+      const b = await badan(req);
+      if (!TGL.test(b.tanggal || '')) return galat(res, 'Tanggal harus YYYY-MM-DD');
+      const dewasaId = +b.dewasaId;
+      const status = String(b.status); // 'bawaan' | 'boleh' | 'tidak' | 'netral' | 'tidak_berlaku'
+      
+      const lama = db.prepare('SELECT * FROM penanda_dewasa WHERE tanggal=? AND dewasa_id=? AND pengguna_id=?')
+        .get(b.tanggal, dewasaId, saya.id);
+
+      if (status === 'bawaan') {
+        db.prepare('DELETE FROM penanda_dewasa WHERE tanggal=? AND dewasa_id=? AND pengguna_id=?')
+          .run(b.tanggal, dewasaId, saya.id);
+        catat('penanda_dewasa', `${b.tanggal}/${dewasaId}/${saya.id}`, 'hapus', lama, null, oleh);
+      } else {
+        const sifatMap = { 'boleh': 0, 'tidak': 1, 'netral': 3, 'tidak_berlaku': 4 };
+        const sifatVal = sifatMap[status];
+        if (sifatVal === undefined) return galat(res, 'Status tidak valid');
+        
+        db.prepare(`INSERT INTO penanda_dewasa (tanggal, dewasa_id, pengguna_id, sifat, oleh) VALUES (?,?,?,?,?)
+          ON CONFLICT(tanggal, dewasa_id, pengguna_id) DO UPDATE SET sifat=excluded.sifat, oleh=excluded.oleh, diubah=datetime('now')`)
+          .run(b.tanggal, dewasaId, saya.id, sifatVal, oleh);
+        catat('penanda_dewasa', `${b.tanggal}/${dewasaId}/${saya.id}`, lama ? 'ubah' : 'tambah', lama, { tanggal: b.tanggal, dewasaId, sifat: sifatVal }, oleh);
+      }
+      svc.bersihkanCache();
+      return json(res, { ok: true });
+    }
+    if (p === '/api/penanda-dewasa' && req.method === 'GET') {
+      if (!saya) return galat(res, 'Silakan masuk terlebih dahulu.', 401);
+      const t = q.get('tanggal');
+      if (!TGL.test(t || '')) return galat(res, 'Parameter tanggal harus YYYY-MM-DD');
+      const data = db.prepare('SELECT * FROM penanda_dewasa WHERE tanggal = ? AND pengguna_id = ?').all(t, saya.id);
+      return json(res, data);
     }
 
     /* ================= koreksi sasih ================= */

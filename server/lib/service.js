@@ -19,28 +19,55 @@ import { muatMatriksExcel } from './db.js';
 
 const MATRIKS = muatMatriksExcel();
 
-/** Cache aturan hasil parsing, dibuang bila dewasa disunting. */
-let cacheAturan = null;
-export function bersihkanCache() { cacheAturan = null; cacheTika = null; }
+/** Cache aturan hasil parsing per penggunaId, dibuang bila dewasa disunting. */
+let cacheAturanMap = new Map();
+export function bersihkanCache() { cacheAturanMap.clear(); cacheTika = null; }
 
-function aturanDewasa() {
-  if (cacheAturan) return cacheAturan;
-  const baris = db.prepare('SELECT * FROM dewasa WHERE aktif = 1 ORDER BY nama').all();
-  cacheAturan = baris.map((d) => {
+export function aturanDewasa(penggunaId = null) {
+  const cacheKey = penggunaId || 'global';
+  if (cacheAturanMap.has(cacheKey)) return cacheAturanMap.get(cacheKey);
+
+  let baris;
+  if (penggunaId) {
+    baris = db.prepare('SELECT * FROM dewasa WHERE aktif = 1 AND (pengguna_id IS NULL OR pengguna_id = ?) ORDER BY nama').all(penggunaId);
+  } else {
+    baris = db.prepare('SELECT * FROM dewasa WHERE aktif = 1 AND pengguna_id IS NULL ORDER BY nama').all();
+  }
+
+  const hasil = baris.map((d) => {
     const { alternatif, takDikenali } = parseKondisi(d.kondisi);
     return { ...d, alternatif, takDikenali };
   });
-  return cacheAturan;
+  cacheAturanMap.set(cacheKey, hasil);
+  return hasil;
 }
 
-export function daftarDewasa() { return aturanDewasa(); }
+export function daftarDewasa(penggunaId = null) { return aturanDewasa(penggunaId); }
 
 const dalamExcel = (i) => i >= EXCEL_RANGE.mulai && i <= EXCEL_RANGE.sampai;
 
 /** Dewasa yang berlaku pada satu hari, beserta asal-usul keputusannya. */
-export function dewasaPadaHari(i, hari) {
+export function dewasaPadaHari(i, hari, penggunaId = null) {
   const hasil = [];
-  for (const d of aturanDewasa()) {
+  const tanggalISO = hari.tanggal || (hari.tanggalKe && isoOf(i));
+  
+  // Ambil penanda harian override untuk user ini pada tanggal tersebut
+  const penanda = {};
+  if (penggunaId && tanggalISO) {
+    const barisPenanda = db.prepare('SELECT dewasa_id, sifat FROM penanda_dewasa WHERE tanggal = ? AND pengguna_id = ?').all(tanggalISO, penggunaId);
+    for (const p of barisPenanda) {
+      penanda[p.dewasa_id] = p.sifat;
+    }
+  }
+
+  for (const d of aturanDewasa(penggunaId)) {
+    // Cek apakah ada penanda khusus hari ini untuk dewasa ini
+    const overrideSifat = penanda[d.id];
+    if (overrideSifat === 4) {
+      // Status 4 = Tidak Berlaku / Kekeran
+      continue;
+    }
+
     let berlakuHariIni = false;
     let sumber;
     if (d.asal === 'excel' && dalamExcel(i) && MATRIKS.has(d.id)) {
@@ -50,13 +77,21 @@ export function dewasaPadaHari(i, hari) {
       berlakuHariIni = berlaku(d.alternatif, hari);
       sumber = 'aturan';
     }
+
+    // Jika di-override menjadi Ayu (0) atau Ala (1) dll., dewasa dipaksa aktif terlepas dari aturan aslinya
+    if (overrideSifat === 0 || overrideSifat === 1 || overrideSifat === 2 || overrideSifat === 3) {
+      berlakuHariIni = true;
+    }
+
     if (berlakuHariIni) {
       // Bobot diambil dari alternatif yang benar-benar cocok hari itu; bila
       // hari diambil dari tabel Excel, dipakai bobot tertinggi aturannya.
       const bobot = sumber === 'aturan' ? bobotPadaHari(d.alternatif, hari) : bobotAturan(d.alternatif);
+      const sifatFinal = (overrideSifat !== undefined && overrideSifat !== 4) ? overrideSifat : d.sifat;
       hasil.push({
-        id: d.id, nama: d.nama, sifat: d.sifat, bobot,
+        id: d.id, nama: d.nama, sifat: sifatFinal, bobot,
         keterangan: d.keterangan, kondisi: d.kondisi, sumber,
+        dikoreksi: overrideSifat !== undefined,
       });
     }
   }
@@ -64,9 +99,9 @@ export function dewasaPadaHari(i, hari) {
 }
 
 /** Seluruh keterangan satu hari, sesudah koreksi peranda diterapkan. */
-export function hari(tanggalISO) {
+export function hari(tanggalISO, penggunaId = null) {
   const i = dayIndex(tanggalISO);
-  const dasar = dayInfo(i);
+  const dasar = { ...dayInfo(i), tanggal: tanggalISO };
   const nilai = gradesAt(i);
 
   // 1. koreksi sasih/penanggal
@@ -89,7 +124,7 @@ export function hari(tanggalISO) {
 
   const catatan = db.prepare('SELECT * FROM catatan WHERE tanggal = ? ORDER BY dibuat').all(tanggalISO);
 
-  const dewasa = dewasaPadaHari(i, dasar);
+  const dewasa = dewasaPadaHari(i, dasar, penggunaId);
   return {
     ...dasar,
     nilai,
@@ -238,13 +273,13 @@ export function putusan(nilai) {
 }
 
 /** Ringkasan satu bulan Masehi untuk tampilan kalender. */
-export function bulan(tahun, bln) {
+export function bulan(tahun, bln, penggunaId = null) {
   const jml = new Date(Date.UTC(tahun, bln, 0)).getUTCDate();
   const out = [];
   for (let t = 1; t <= jml; t++) {
     const iso = `${tahun}-${String(bln).padStart(2, '0')}-${String(t).padStart(2, '0')}`;
     const i = dayIndex(iso);
-    const dasar = dayInfo(i);
+    const dasar = { ...dayInfo(i), tanggal: iso };
     const nilai = gradesAt(i);
     const kor = db.prepare('SELECT tp, sasih FROM koreksi_sasih WHERE tanggal = ?').get(iso);
     if (kor) { if (kor.tp) dasar.tp = kor.tp; if (kor.sasih) dasar.sasih = kor.sasih; }
@@ -254,7 +289,7 @@ export function bulan(tahun, bln) {
       if (k) nilai[k] = { taraf: p.taraf, teks: p.teks, dikoreksi: true };
     }
     const jmlCatatan = db.prepare('SELECT COUNT(*) c FROM catatan WHERE tanggal = ?').get(iso).c;
-    const dewasa = dewasaPadaHari(i, dasar);
+    const dewasa = dewasaPadaHari(i, dasar, penggunaId);
     out.push({
       tanggal: iso, hariKe: t, indeks: i,
       saptawara: dasar.saptawara, pancawara: dasar.pancawara, wuku: dasar.wuku,

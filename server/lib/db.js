@@ -27,9 +27,23 @@ CREATE TABLE IF NOT EXISTS dewasa (
   sifat       INTEGER NOT NULL DEFAULT 0,   -- 0 Ayu, 1 Ala, 2 Ayu&Ala, 3 Netral
   asal        TEXT NOT NULL DEFAULT 'excel',-- 'excel' | 'tambahan'
   aktif       INTEGER NOT NULL DEFAULT 1,
-  diubah      TEXT NOT NULL DEFAULT (datetime('now'))
+  diubah      TEXT NOT NULL DEFAULT (datetime('now')),
+  pengguna_id INTEGER REFERENCES pengguna(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_dewasa_nama ON dewasa(nama);
+CREATE INDEX IF NOT EXISTS idx_dewasa_pengguna ON dewasa(pengguna_id);
+
+-- Penanda harian dewasa per pengguna (kekeran desa / pengecualian khusus)
+CREATE TABLE IF NOT EXISTS penanda_dewasa (
+  tanggal     TEXT NOT NULL,
+  dewasa_id   INTEGER NOT NULL REFERENCES dewasa(id) ON DELETE CASCADE,
+  pengguna_id INTEGER NOT NULL REFERENCES pengguna(id) ON DELETE CASCADE,
+  sifat       INTEGER NOT NULL,             -- 0 Ayu, 1 Ala, 2 Ayu & Ala, 3 Netral, 4 Tidak Berlaku
+  oleh        TEXT NOT NULL DEFAULT '',
+  diubah      TEXT NOT NULL DEFAULT (datetime('now')),
+  PRIMARY KEY (tanggal, dewasa_id, pengguna_id)
+);
+CREATE INDEX IF NOT EXISTS idx_penanda_dewasa_tgl ON penanda_dewasa(tanggal);
 
 -- Koreksi Sasih / Penanggal hasil rapat peranda (menimpa perhitungan)
 CREATE TABLE IF NOT EXISTS koreksi_sasih (

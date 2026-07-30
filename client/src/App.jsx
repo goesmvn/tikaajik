@@ -794,6 +794,30 @@ function DetailHari({ d, meta, muatUlang, bolehSunting, tutup }) {
   const [sunting, setSunting] = useState(null);
   const [catatan, setCatatan] = useState('');
   const [buka, setBuka] = useState(true);
+  
+  // State untuk form override dewasa kustom harian
+  const [bukaFormOverride, setBukaFormOverride] = useState(false);
+  const [daftarSemuaDewasa, setDaftarSemuaDewasa] = useState([]);
+  const [overrideDewasaId, setOverrideDewasaId] = useState('');
+  const [overrideStatus, setOverrideStatus] = useState('boleh');
+
+  useEffect(() => {
+    if (bolehSunting && bukaFormOverride) {
+      api.dewasaList().then(setDaftarSemuaDewasa).catch(e => setPesan(['galat', e.message]));
+    }
+  }, [bolehSunting, bukaFormOverride]);
+
+  const simpanOverride = async () => {
+    if (!overrideDewasaId) return;
+    try {
+      await api.penandaSimpan({ tanggal: d.tanggal, dewasaId: +overrideDewasaId, status: overrideStatus });
+      setPesan(['ok', 'Override dewasa berhasil diterapkan.']);
+      setBukaFormOverride(false);
+      muatUlang();
+    } catch (e) {
+      setPesan(['galat', e.message]);
+    }
+  };
 
   const WARA = [['ekaNama', 'Eka Wara'], ['dwiNama', 'Dwi Wara'], ['triNama', 'Tri Wara'],
     ['caturNama', 'Catur Wara'], ['sadNama', 'Sadwara'], ['astaNama', 'Astawara'],
@@ -920,16 +944,83 @@ function DetailHari({ d, meta, muatUlang, bolehSunting, tutup }) {
         </div>
         <div className="gulirdaftar">
           {d.dewasa.length === 0 && <div className="sub">Tidak ada dewasa khusus pada hari ini.</div>}
-          {[0, 2, 1, 3].flatMap((sf) => d.dewasa.filter((x) => x.sifat === sf)).map((x) => (
-            <div key={x.id} className={`dbaris s${x.sifat}`}>
-              <div className="nm">{x.nama}
-                {x.bobot > 0 && <span className={`bobotpil b${x.bobot}`} title={`Bobot ${x.bobot} — ${NAMA_BOBOT[x.bobot]}`}>{x.bobot}</span>}
-                <span style={{ fontWeight: 400, fontSize: '.74rem', color: 'var(--tulis3)', marginLeft: '.4rem' }}>
-                  {x.sumber === 'excel' ? 'dari Excel' : 'dari aturan'}</span></div>
-              <div className="ds">{x.keterangan || '—'}</div>
-            </div>
-          ))}
+          {[0, 2, 1, 3].flatMap((sf) => d.dewasa.filter((x) => x.sifat === sf)).map((x) => {
+            const statusOverride = x.dikoreksi ? (x.sifat === 0 ? 'boleh' : (x.sifat === 1 ? 'tidak' : (x.sifat === 3 ? 'netral' : 'tidak_berlaku'))) : 'bawaan';
+            return (
+              <div key={x.id} className={`dbaris s${x.sifat}`} style={{ display: 'flex', flexDirection: 'column', gap: '.3rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '.4rem' }}>
+                  <div className="nm">
+                    {x.nama}
+                    {x.bobot > 0 && <span className={`bobotpil b${x.bobot}`} title={`Bobot ${x.bobot} — ${NAMA_BOBOT[x.bobot]}`}>{x.bobot}</span>}
+                    <span style={{ fontWeight: 400, fontSize: '.74rem', color: 'var(--tulis3)', marginLeft: '.4rem' }}>
+                      {x.sumber === 'excel' ? 'dari Excel' : 'dari aturan'}
+                    </span>
+                    {x.dikoreksi && <span className="tag s0" style={{ fontSize: '.64rem', padding: '.05rem .25rem', marginLeft: '.4rem' }}>diubah</span>}
+                  </div>
+                  {bolehSunting && (
+                    <select 
+                      value={statusOverride}
+                      style={{ width: 'auto', fontSize: '.76rem', padding: '.2rem .4rem', minHeight: 'auto' }}
+                      onChange={async (e) => {
+                        try {
+                          await api.penandaSimpan({ tanggal: d.tanggal, dewasaId: x.id, status: e.target.value });
+                          muatUlang();
+                        } catch (err) {
+                          setPesan(['galat', err.message]);
+                        }
+                      }}
+                    >
+                      <option value="bawaan">Ikut Aturan Bawaan</option>
+                      <option value="boleh">Ayu (Boleh)</option>
+                      <option value="tidak">Ala (Tidak Boleh)</option>
+                      <option value="netral">Netral</option>
+                      <option value="tidak_berlaku">Tidak Berlaku / Kekeran</option>
+                    </select>
+                  )}
+                </div>
+                <div className="ds">{x.keterangan || '—'}</div>
+              </div>
+            );
+          })}
         </div>
+
+        {bolehSunting && (
+          <div style={{ marginTop: '.6rem' }}>
+            {!bukaFormOverride ? (
+              <button className="tombolputih" style={{ fontSize: '.8rem', padding: '.4rem .8rem', minHeight: 'auto' }} onClick={() => setBukaFormOverride(true)}>
+                + Ubah/Override Dewasa Lain Hari Ini
+              </button>
+            ) : (
+              <div className="kotak" style={{ display: 'block', padding: '.7rem', background: 'var(--kartu3)' }}>
+                <div style={{ fontWeight: 600, fontSize: '.82rem', marginBottom: '.4rem' }}>Tandai Keberlakuan Dewasa Hari Ini</div>
+                <div className="grid2" style={{ gap: '.5rem', marginBottom: '.6rem' }}>
+                  <div>
+                    <label className="fl" style={{ fontSize: '.68rem' }}>Pilih Dewasa</label>
+                    <select value={overrideDewasaId} onChange={(e) => setOverrideDewasaId(e.target.value)} style={{ padding: '.4rem', fontSize: '.82rem' }}>
+                      <option value="">-- Pilih Dewasa --</option>
+                      {daftarSemuaDewasa.map((dw) => (
+                        <option key={dw.id} value={dw.id}>{dw.nama} ({dw.asal})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="fl" style={{ fontSize: '.68rem' }}>Status Sifat</label>
+                    <select value={overrideStatus} onChange={(e) => setOverrideStatus(e.target.value)} style={{ padding: '.4rem', fontSize: '.82rem' }}>
+                      <option value="boleh">Ayu (Boleh)</option>
+                      <option value="tidak">Ala (Tidak Boleh)</option>
+                      <option value="netral">Netral</option>
+                      <option value="tidak_berlaku">Tidak Berlaku / Kekeran</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="baris" style={{ gap: '.4rem' }}>
+                  <button className="btn aksi" style={{ minHeight: 'auto', padding: '.4rem .8rem', fontSize: '.8rem' }} onClick={simpanOverride}>Terapkan</button>
+                  <button className="btn" style={{ minHeight: 'auto', padding: '.4rem .8rem', fontSize: '.8rem' }} onClick={() => setBukaFormOverride(false)}>Batal</button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         <div style={{ fontWeight: 700, margin: '.8rem 0 .4rem' }}>Catatan</div>
         {d.catatan.map((c) => (
