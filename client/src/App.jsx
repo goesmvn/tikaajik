@@ -556,16 +556,22 @@ const WARNA_SIFAT = ['var(--ayu)', 'var(--ala)', 'var(--dua)', 'var(--net)'];
 /** Strip empat warna dengan susunan sama seperti kolom pada berkas Excel. */
 function Strip({ n, meta, ket = true }) {
   const kolom = [
-    ['Ngaben Ayu', n.ngabenAyu.taraf], ['Ngaben Ala', n.ngabenAla.taraf],
-    ['Pawiwahan Ayu', n.pawiwahanAyu.taraf], ['Pawiwahan Ala', n.pawiwahanAla.taraf],
+    { nama: 'Ngaben Ayu', taraf: n.ngabenAyu.taraf, sisi: 'ayu' },
+    { nama: 'Ngaben Ala', taraf: n.ngabenAla.taraf, sisi: 'ala' },
+    { nama: 'Pawiwahan Ayu', taraf: n.pawiwahanAyu.taraf, sisi: 'ayu' },
+    { nama: 'Pawiwahan Ala', taraf: n.pawiwahanAla.taraf, sisi: 'ala' },
   ];
   return (
     <>
       <span className="strip">
-        {kolom.map(([nama, t], i) => (
-          <i key={i} className={t ? `t${t}` : 'kosong'}
-            title={`${nama}: ${t ? meta.taraf[t].nama : 'kosong'}`} />
-        ))}
+        {kolom.map(({ nama, taraf, sisi }, i) => {
+          const warna = taraf ? (sisi === 'ayu' ? WARNA_TARAF_AYU[taraf] : WARNA_TARAF_ALA[taraf]) : '';
+          return (
+            <i key={i} className={taraf ? '' : 'kosong'}
+              style={taraf ? { background: warna } : {}}
+              title={`${nama}: ${taraf ? TARAF_NAMA[taraf] : 'kosong'}`} />
+          );
+        })}
       </span>
       {ket && <span className="stripket"><span>NGABEN</span><span>PAWIWAHAN</span></span>}
     </>
