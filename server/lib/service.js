@@ -310,11 +310,11 @@ export function cariHariBaik({ dari, jenis = 'pawiwahan', tarafMin = 3, tanpaAla
 /** Lima tingkat kesimpulan, dari paling buruk ke paling baik. */
 export const TINGKAT = [
   null,
-  { kode: 1, nama: 'Sangat Tidak Baik', ringkas: 'Sangat Ala' },
-  { kode: 2, nama: 'Tidak Baik', ringkas: 'Ala' },
-  { kode: 3, nama: 'Sedang', ringkas: 'Sedang' },
-  { kode: 4, nama: 'Baik', ringkas: 'Ayu' },
-  { kode: 5, nama: 'Sangat Baik', ringkas: 'Sangat Ayu' },
+  { kode: 1, nama: 'Utamaning Utama Ala', ringkas: 'Utamaning Utama Ala' },
+  { kode: 2, nama: 'Madyaning Madya Ala', ringkas: 'Madyaning Madya Ala' },
+  { kode: 3, nama: 'Netral', ringkas: 'Netral' },
+  { kode: 4, nama: 'Madyaning Madya Ayu', ringkas: 'Madyaning Madya Ayu' },
+  { kode: 5, nama: 'Utamaning Utama Ayu', ringkas: 'Utamaning Utama Ayu' },
 ];
 
 /** Panca Yadnya beserta kata kunci pengenalnya di dalam teks keterangan. */
