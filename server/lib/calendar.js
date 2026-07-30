@@ -147,6 +147,10 @@ export function parseTP(tp) {
 export function dayInfo(i) {
   const pw = pawukonAt(i);
   const ln = lunarAt(i);
+  const d = new Date(START.getTime() + i * 86400000);
+  const pm = getPranathaMangsa(d);
+  const sapIndex = ['Redite', 'Soma', 'Anggara', 'Buda', 'Wraspati', 'Sukra', 'Saniscara'].indexOf(pw.saptawara);
+  const sariningDawuh = getSariningDawuh(sapIndex >= 0 ? sapIndex : 0);
   return {
     indeks: i,
     tanggal: isoOf(i),
@@ -155,6 +159,111 @@ export function dayInfo(i) {
     penanggalan: parseTP(ln.tp),
     purnama: parseTP(ln.tp).some((x) => x.jenis === 'penanggal' && x.angka === 15),
     tilem: parseTP(ln.tp).some((x) => x.jenis === 'panglong' && x.angka === 15),
+    pranathaMangsa: pm,
+    sariningDawuh,
+    ekaJalaReshi: getEkaJalaReshi(pw.wukuIndex, sapIndex >= 0 ? sapIndex : 0),
+  };
+}
+
+export function getPranathaMangsa(date) {
+  const m = date.getMonth() + 1;
+  const d = date.getDate();
+  const md = m * 100 + d;
+
+  if (md >= 622 && md <= 801) return { no: 1, nama: 'Shrawana', swen: '41 raina' };
+  if (md >= 802 && md <= 824) return { no: 2, nama: 'BhadraPada', swen: '23 raina' };
+  if (md >= 825 && md <= 917) return { no: 3, nama: 'Asuji', swen: '24 raina' };
+  if (md >= 918 && md <= 1012) return { no: 4, nama: 'Kartika', swen: '25 raina' };
+  if (md >= 1013 && md <= 1109) return { no: 5, nama: 'Marghasirsa', swen: '27 raina' };
+  if (md >= 1110 && md <= 1122) return { no: 6, nama: 'Pausya', swen: '43 raina' };
+  if (md >= 1123 || md <= 202) return { no: 7, nama: 'Magha', swen: '43 raina' };
+  if (md >= 203 && md <= 229) return { no: 8, nama: 'Phalguna', swen: '26/27 raina' };
+  if (md >= 230 && md <= 325) return { no: 9, nama: 'Caitra', swen: '25 raina' };
+  if (md >= 326 && md <= 418) return { no: 10, nama: 'Waisyaka', swen: '24 raina' };
+  if (md >= 419 && md <= 511) return { no: 11, nama: 'Jyesta', swen: '23 raina' };
+  return { no: 12, nama: 'Asadha', swen: '41 raina' };
+}
+
+export function getSariningDawuh(saptawaraIndex) {
+  const sarining = [
+    { siang: '07.00 - 07.54 & 10.18 - 12.42', malam: '22.18 - 24.42 & 03.00 - 04.00' }, // Redite (0)
+    { siang: '07.54 - 10.18', malam: '24.42 - 03.06' },                                 // Coma (1)
+    { siang: '10.00 - 11.30 & 13.00 - 15.00', malam: '19.54 - 22.00 & 22.30 - 01.00' }, // Anggara (2)
+    { siang: '07.34 - 08.30 & 11.30 - 12.42', malam: '22.18 - 23.30 & 02.30 - 03.00' }, // Budha (3)
+    { siang: '05.30 - 07.54 & 12.42 - 14.30', malam: '20.30 - 22.18 & 03.06 - 05.30' }, // Wraspati (4)
+    { siang: '08.30 - 10.18 & 16.00 - 17.30', malam: '17.30 - 19.00 & 24.42 - 02.03' }, // Sukra (5)
+    { siang: '11.30 - 12.42', malam: '22.18 - 23.30' },                                 // Saniscara (6)
+  ];
+  return sarining[saptawaraIndex] || sarining[0];
+}
+
+const EKA_JALA_RESHI_TABLE = [
+  ['Suka Pinanggih', 'Buat Suka', 'Manggih Suka', 'Buat Suka', 'Suka Pinanggih', 'Suka Pinanggih', 'Manggih Suka'], // Sinta (1)
+  ['Kamaranan', 'Buat Suka', 'Kinasihan Jana', 'Wredhi Putra', 'Suka Rahayu', 'Suka Pinanggih', 'Sidha Kasobagian'], // Landep (2)
+  ['Kinasihan Jana', 'Buat Suka', 'Kinasihan Jana', 'Tininggaling Suka', 'Rahayu', 'Buat Sebet', 'Buat Astawa'], // Ukir (3)
+];
+
+export function getEkaJalaReshi(wukuIndex, saptawaraIndex) {
+  const row = EKA_JALA_RESHI_TABLE[wukuIndex];
+  if (!row) return 'Rahayu';
+  return row[saptawaraIndex] || 'Rahayu';
+}
+
+export function getDawuhKutikaLima(jamFormat) {
+  // Format jamFormat: "HH:MM", misal "09:15"
+  const [h, m] = jamFormat.split(':').map(Number);
+  const totalMenit = h * 60 + m;
+
+  // Kutika Lima berlaku jam 06.00 (360 menit) s/d 18.00 (1080 menit)
+  if (totalMenit < 360 || totalMenit >= 1080) {
+    return { rentang: 'Malam / Luar Kutika Lima', dawuh: 'Wengi', dewa: 'Malam', sifat: 'Waktu malam hari' };
+  }
+
+  let dawuhNama = '';
+  let dewaList = [];
+  let startMenit = 0;
+
+  if (totalMenit >= 360 && totalMenit < 510) { // 06.00 - 08.30 (Dawuh I)
+    dawuhNama = 'Dawuh I (Pisan) - 06.00 s/d 08.30';
+    dewaList = ['Maheswara', 'Kala', 'Shri', 'Brahma', 'Wisnu'];
+    startMenit = 360;
+  } else if (totalMenit >= 510 && totalMenit < 660) { // 08.30 - 11.00 (Dawuh II)
+    dawuhNama = 'Dawuh II (Kalih) - 08.30 s/d 11.00';
+    dewaList = ['Wisnu', 'Maheswara', 'Kala', 'Shri', 'Brahma'];
+    startMenit = 510;
+  } else if (totalMenit >= 660 && totalMenit < 780) { // 11.00 - 13.00 (Dawuh III)
+    dawuhNama = 'Dawuh III (Tiga) - 11.00 s/d 13.00';
+    dewaList = ['Brahma', 'Wisnu', 'Maheswara', 'Kala', 'Shri'];
+    startMenit = 660;
+  } else if (totalMenit >= 780 && totalMenit < 930) { // 13.00 - 15.30 (Dawuh IV)
+    dawuhNama = 'Dawuh IV (Kaping Pat) - 13.00 s/d 15.30';
+    dewaList = ['Shri', 'Brahma', 'Wisnu', 'Maheswara', 'Kala'];
+    startMenit = 780;
+  } else { // 15.30 - 18.00 (Dawuh V)
+    dawuhNama = 'Dawuh V (Kaping Lima) - 15.30 s/d 18.00';
+    dewaList = ['Kala', 'Shri', 'Brahma', 'Wisnu', 'Maheswara'];
+    startMenit = 930;
+  }
+
+  const offsetMenit = totalMenit - startMenit;
+  const dewaIndex = Math.floor(offsetMenit / 10) % dewaList.length;
+  const dewaPelindung = dewaList[dewaIndex];
+
+  let sifat = '';
+  if (dewaPelindung === 'Maheswara' || dewaPelindung === 'Shri') {
+    sifat = 'Sangat baik (becik) untuk upacara keagamaan pribadi, kemasyarakatan, maupun kenegaraan.';
+  } else if (dewaPelindung === 'Brahma') {
+    sifat = 'Berenergi panas. Baik untuk membakar bata/gerabah, namun buruk untuk bertanam.';
+  } else if (dewaPelindung === 'Wisnu') {
+    sifat = 'Berenergi basah. Sangat baik untuk menanam padi, memohon hujan, atau mendirikan lumbung air.';
+  } else {
+    sifat = 'Berenergi keras/buruk. Dikhususkan untuk Bhuta Yadnya (caru) atau pertahanan fisik.';
+  }
+
+  return {
+    dawuh: dawuhNama,
+    dewa: dewaPelindung,
+    sifat
   };
 }
 

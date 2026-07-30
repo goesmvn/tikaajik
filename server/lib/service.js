@@ -10,6 +10,7 @@
 import { db } from './db.js';
 import { dayInfo, gradesAt, dayIndex, isoOf, parseTP, EXCEL_RANGE, TARAF, META } from './calendar.js';
 import { parseKondisi, berlaku, bobotAturan, bobotPadaHari } from './rules.js';
+import { getPancaDawuh, getKutikaLima, checkAtiwaTiwaConstraint, getAmrethaMasaningSasih } from './wariga_extended.js';
 
 const E_WUKU = ['Sinta','Landep','Ukir','Kulantir','Tolu','Gumbreg','Wariga','Warigadean',
   'Julungwangi','Sungsang','Dungulan','Kuningan','Langkir','Medangsia','Pujut','Pahang',
@@ -125,11 +126,37 @@ export function hari(tanggalISO, penggunaId = null) {
   const catatan = db.prepare('SELECT * FROM catatan WHERE tanggal = ? ORDER BY dibuat').all(tanggalISO);
 
   const dewasa = dewasaPadaHari(i, dasar, penggunaId);
+
+  // Ambil angka penanggal / panglong jika ada
+  const tpInfo = dasar.penanggalan && dasar.penanggalan[0];
+  const jenisTP = tpInfo ? tpInfo.jenis : null;
+  const angkaTP = tpInfo ? tpInfo.angka : 1;
+
+  const validasiAtiwaTiwa = checkAtiwaTiwaConstraint(
+    dasar.wuku,
+    dasar.saptawara,
+    dasar.pancawara,
+    dasar.astaNama,
+    jenisTP === 'penanggal' ? angkaTP : 0,
+    jenisTP === 'panglong' ? angkaTP : 0,
+    dasar.sasih
+  );
+
+  const amrethaSasih = getAmrethaMasaningSasih(
+    dasar.sasih,
+    dasar.purnama ? 'purnama' : (dasar.tilem ? 'tilem' : jenisTP),
+    angkaTP
+  );
+
   return {
     ...dasar,
     nilai,
     dewasa,
     catatan,
+    validasiAtiwaTiwa,
+    amrethaSasih,
+    pancaDawuhContoh: getPancaDawuh(10), // Contoh dawuh jam 10 pagi
+    kutikaLimaContoh: getKutikaLima(10, angkaTP),
     dalamRentangExcel: dalamExcel(i),
     putusan: putusan(nilai),
     kesimpulan: kesimpulanDewasa(dewasa),

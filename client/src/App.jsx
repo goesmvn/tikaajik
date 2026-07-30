@@ -942,6 +942,27 @@ function DetailHari({ d, meta, muatUlang, bolehSunting, tutup }) {
         }} /></span>
       </div>
 
+      <div className="kotak" style={{ display: 'block', background: '#F4F6F9', borderColor: '#D0D7DE' }}>
+        <div style={{ fontWeight: 700, color: '#1B2A4A', marginBottom: '.3rem' }}>
+          🌿 Pranatha Mangsa &amp; Dawuh Harian
+        </div>
+        <div style={{ fontSize: '.84rem', color: '#2C3E50', display: 'flex', flexDirection: 'column', gap: '.25rem' }}>
+          <div>
+            <b>Pranatha Mangsa:</b> Mangsa {d.pranathaMangsa?.no} — <b>{d.pranathaMangsa?.nama}</b> ({d.pranathaMangsa?.swen})
+          </div>
+          <div>
+            <b>Sarining Dawuh (Jam Emas):</b><br />
+            ☀️ Siang: {d.sariningDawuh?.siang || '—'}<br />
+            🌙 Malam: {d.sariningDawuh?.malam || '—'}
+          </div>
+          {d.ekaJalaReshi && (
+            <div>
+              <b>Eka Jala Reshi:</b> <span style={{ color: '#0D47A1', fontWeight: 600 }}>{d.ekaJalaReshi}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(15rem,1fr))', gap: '.5rem' }}>
         <div><div style={{ fontWeight: 700, marginBottom: '.3rem' }}>Ngaben (Pitra Yadnya)</div>
           {slot('Ayu', d.nilai.ngabenAyu, 'ngaben', 'ayu')}

@@ -16,7 +16,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { db, seed, catat } from './lib/db.js';
 import * as svc from './lib/service.js';
-import { parseKondisi } from './lib/rules.js';
+import { parseKondisi, checkDewasaPawiwahan, checkDewasaAtiwaTiwa } from './lib/rules.js';
+import { getDawuhKutikaLima } from './lib/calendar.js';
 import * as auth from './lib/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -227,6 +228,43 @@ const server = http.createServer(async (req, res) => {
       if (!(th >= 1900 && th <= 3000) || !(bl >= 1 && bl <= 12)) return galat(res, 'tahun/bulan tidak sah');
       return json(res, svc.bulan(th, bl, saya?.id));
     }
+    if (p === '/api/manusa-yadnya' && req.method === 'GET') {
+      const dudonan = [
+        { id: 1, nama: 'NGERUJAKIN', waktu: 'Janin 3 Bulan', tujuan: 'Penyucian pertama benih manusia' },
+        { id: 2, nama: 'MAGEDONG-GEDONGAN', waktu: 'Janin 5 Bulan (Masehi) / 6 Bulan (Bali)', tujuan: 'Keselamatan & kecerdasan janin' },
+        { id: 3, nama: 'RARE EMBAS / LEKAD', waktu: 'Sesaat Bayi Lahir', tujuan: 'Menyambut kelahiran & mendem ari-ari' },
+        { id: 4, nama: 'KEPUS PUNGSED', waktu: 'Tali Pusar Lepas', tujuan: 'Penyucian pusar & mohon perlindungan Sang Hyang Kumara' },
+        { id: 5, nama: 'NGELEPAS AWON', waktu: 'Bayi 12 Hari', tujuan: 'Penyucian noda proses kelahiran' },
+        { id: 6, nama: 'KAMBUHAN (Macolokan)', waktu: 'Bayi 42 Hari', tujuan: 'Penyucian cuntaka melahirkan bagi ibu & bayi' },
+        { id: 7, nama: 'NYAMBUTIN (Nelu Bulanin)', waktu: 'Bayi 3 Bulan Bali (105 Hari)', tujuan: 'Penyucian jiwa raga & tuwun tanah' },
+        { id: 8, nama: 'OTONAN', waktu: 'Bayi 6 Bulan Bali (210 Hari)', tujuan: 'Peringatan hari kelahiran spiritual & pencukuran rambut' },
+        { id: 9, nama: 'NGEMPUGIN', waktu: 'Gigi Pertama Tumbuh', tujuan: 'Keselamatan pertumbuhan gigi' },
+        { id: 10, nama: 'MAKUPAK', waktu: 'Gigi Susu Tanggal', tujuan: 'Fase pergantian gigi menuju dewasa' },
+        { id: 11, nama: 'MATUSUK', waktu: 'Usia Sekolah Dasar', tujuan: 'Melubangi telinga anak perempuan & penajaman indra' },
+        { id: 12, nama: 'MUNGGAH DEHA / TRUNA', waktu: 'Masa Pubertas', tujuan: 'Penyucian dari masa kanak-kanak ke dewasa' },
+        { id: 13, nama: 'METATAH / MEPANES', waktu: 'Dewasa Penuh (Sebelum Pernikahan)', tujuan: 'Mengendalikan nafsu Sad Ripu' },
+        { id: 14, nama: 'WINTEN SARI', waktu: 'Remaja/Dewasa Belajar Rohani', tujuan: 'Pembersihan lahir batin untuk menerima ilmu suci' },
+        { id: 15, nama: 'WIWAHA / PAWIWAHAN', waktu: 'Pernikahan', tujuan: 'Penyatuan suci Purusa & Pradhana' }
+      ];
+      return json(res, dudonan);
+    }
+
+    if (p === '/api/cek-pantangan' && req.method === 'GET') {
+      const idxStr = url.searchParams.get('i');
+      if (!idxStr) return json(res, { error: 'Parameter i wajib' }, 400);
+      const i = parseInt(idxStr, 10);
+      const info = svc.infoHari(i);
+      const pawiwahan = checkDewasaPawiwahan(info);
+      const atiwaTiwa = checkDewasaAtiwaTiwa(info);
+      return json(res, { hari: info.tanggal, wuku: info.wuku, pawiwahan, atiwaTiwa });
+    }
+
+    if (p === '/api/dauh' && req.method === 'GET') {
+      const jam = url.searchParams.get('jam') || '09:00';
+      const dauhInfo = getDawuhKutikaLima(jam);
+      return json(res, dauhInfo);
+    }
+
     if (p === '/api/hari-baik') {
       const dari = q.get('dari');
       if (!TGL.test(dari || '')) return galat(res, 'Parameter "dari" harus YYYY-MM-DD');

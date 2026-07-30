@@ -158,6 +158,41 @@ export function bobotAlternatif(r) {
   return b;
 }
 
+/**
+ * Logika Alahing Sasih: Evaluasi sengketa waktu antara hari baik (ayu) & buruk (ala)
+ * Hierarki Kekuatan: Wewaran < Wuku < Tanggal/Panglong < Sasih < Dawuh < Sanghyang Trayo Dhasa Saksi
+ */
+export function selesaikanSengketaAlahingSasih(aturanAyu, aturanAla, infoHari) {
+  const bobotAyu = bobotPadaHari(aturanAyu, infoHari);
+  const bobotAla = bobotPadaHari(aturanAla, infoHari);
+
+  if (bobotAyu > bobotAla) {
+    return { hasil: 'Ayu', alasan: `Hari Baik (bobot ${bobotAyu}) mengalahkan Hari Buruk (bobot ${bobotAla}) berdasarkan Alahing Sasih.` };
+  } else if (bobotAla > bobotAyu) {
+    return { hasil: 'Ala', alasan: `Hari Buruk (bobot ${bobotAla}) mengalahkan Hari Baik (bobot ${bobotAyu}) berdasarkan Alahing Sasih.` };
+  } else {
+    return { hasil: 'Netral', alasan: `Hari Baik dan Hari Buruk memiliki bobot kekuatan seimbang (${bobotAyu}).` };
+  }
+}
+
+/**
+ * Modul Penampihaning Sasih (Koreksi Sasih Astronomis nuju Purnama)
+ */
+export function koreksiPenampihaningSasih(sasihNama, saptawaraNama, purnama) {
+  if (!purnama) return sasihNama;
+
+  const s = sasihNama.toLowerCase();
+  const w = saptawaraNama.toLowerCase();
+
+  if (s === 'shrawana' && w === 'buda') return 'Asadha';
+  if (s === 'asuji' && w === 'saniscara') return 'Bhadrapada';
+  if (s === 'marghasirsa' && w === 'redite') return 'Pausya';
+  if ((s === 'magha' || s === 'caitra') && w === 'anggara') return 'Phalguna';
+  if (s === 'jyestha' && w === 'redite') return 'Waisyaka';
+
+  return sasihNama;
+}
+
 /** Bobot satu dewasa = alternatif terkuat yang dimilikinya. */
 export function bobotAturan(alternatif) {
   return alternatif.length ? Math.max(...alternatif.map(bobotAlternatif)) : 0;
@@ -168,4 +203,41 @@ export function bobotPadaHari(alternatif, hari) {
   let b = 0;
   for (const r of alternatif) if (cocokAlternatif(r, hari)) b = Math.max(b, bobotAlternatif(r));
   return b;
+}
+
+const RANGDA_TIGA_WUKU = ['Julungwangi', 'Pujut', 'Pahang', 'Krulut', 'Prangbakat', 'Bala'];
+const INGKEL_WONG_WUKU = ['Sinta', 'Warigadean', 'Medangsia', 'Tambir', 'Bala', 'Ugu'];
+
+export function checkDewasaPawiwahan(infoHari) {
+  const wuku = infoHari.wuku;
+  const warnings = [];
+
+  if (RANGDA_TIGA_WUKU.includes(wuku)) {
+    warnings.push({ jenis: 'Rangda Tiga', pesan: `Wuku ${wuku} termasuk Rangda Tiga (pantangan keras perkawinan)` });
+  }
+  if (INGKEL_WONG_WUKU.includes(wuku)) {
+    warnings.push({ jenis: 'Ingkel Wong', pesan: `Wuku ${wuku} terkena Ingkel Wong (pantangan manusia/perkawinan)` });
+  }
+
+  return {
+    layak: warnings.length === 0,
+    warnings
+  };
+}
+
+export function checkDewasaAtiwaTiwa(infoHari) {
+  const wuku = infoHari.wuku;
+  const warnings = [];
+
+  if (['Dungulan', 'Kuningan', 'Langkir', 'Pujut'].includes(wuku)) {
+    warnings.push({ jenis: 'Wuku Terlarang', pesan: `Wuku ${wuku} dilarang keras untuk Atiwa-tiwa/Kremasi` });
+  }
+  if (INGKEL_WONG_WUKU.includes(wuku)) {
+    warnings.push({ jenis: 'Ingkel Wong', pesan: `Wuku ${wuku} terkena Ingkel Wong (pantangan pengabenan/atiwa-tiwa)` });
+  }
+
+  return {
+    layak: warnings.length === 0,
+    warnings
+  };
 }
