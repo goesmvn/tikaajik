@@ -104,16 +104,16 @@ export default function App() {
             </div>
             {saya.masuk ? (<>
               <div className="avatar" aria-hidden="true">{inisial}</div>
-              <div>
-                <div className="nm">{saya.nama}</div>
+              <div style={{ maxWidth: '9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div className="nm" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={saya.nama}>{saya.nama}</div>
                 <div className="pr">{PERAN_NAMA[saya.peran]}</div>
               </div>
               {bolehSunting && (
-                <button className="btn aksi" onClick={() => { setTab('kelola'); window.scrollTo(0, 0); }} style={{ marginLeft: '.3rem', background: '#2E7D32' }}>
+                <button className="btn aksi" onClick={() => { setTab('kelola'); window.scrollTo(0, 0); }} style={{ marginLeft: '.2rem', background: '#2E7D32', whiteSpace: 'nowrap' }}>
                   ✎ Panel Kelola
                 </button>
               )}
-              <button className="btn" onClick={keluar}>Keluar</button>
+              <button className="btn" onClick={keluar} style={{ whiteSpace: 'nowrap' }}>Keluar</button>
             </>) : (<>
               <div><div className="nm">Belum masuk</div><div className="pr">hanya dapat membaca</div></div>
               <button className="btn aksi" onClick={() => setLayarMasuk(true)}>Masuk</button>
