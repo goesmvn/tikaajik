@@ -314,7 +314,10 @@ function Masuk({ selesai, batal }) {
               fontSize: '1rem',
               fontWeight: 700,
               borderRadius: '.5rem',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              background: '#B71C1C',
+              color: '#ffffff',
+              border: 'none'
             }}>
               {sibuk ? 'Memeriksa…' : 'Masuk Kalender'}
             </button>
