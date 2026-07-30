@@ -19,6 +19,28 @@ export const db = new DatabaseSync(DB_PATH);
 db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
 
 db.exec(`
+-- Pengguna & sesi
+CREATE TABLE IF NOT EXISTS pengguna (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  nama          TEXT NOT NULL,
+  nama_pengguna TEXT NOT NULL UNIQUE,
+  sandi_hash    TEXT NOT NULL,
+  garam         TEXT NOT NULL,
+  peran         TEXT NOT NULL DEFAULT 'pembaca',  -- admin | peranda | pembaca
+  aktif         INTEGER NOT NULL DEFAULT 1,
+  wajib_ganti   INTEGER NOT NULL DEFAULT 0,
+  dibuat        TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS sesi (
+  token_hash  TEXT PRIMARY KEY,
+  pengguna_id INTEGER NOT NULL REFERENCES pengguna(id) ON DELETE CASCADE,
+  kedaluwarsa TEXT NOT NULL,
+  alamat      TEXT NOT NULL DEFAULT '',
+  dibuat      TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_sesi_pengguna ON sesi(pengguna_id);
+
 CREATE TABLE IF NOT EXISTS dewasa (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   nama        TEXT NOT NULL,
@@ -27,11 +49,9 @@ CREATE TABLE IF NOT EXISTS dewasa (
   sifat       INTEGER NOT NULL DEFAULT 0,   -- 0 Ayu, 1 Ala, 2 Ayu&Ala, 3 Netral
   asal        TEXT NOT NULL DEFAULT 'excel',-- 'excel' | 'tambahan'
   aktif       INTEGER NOT NULL DEFAULT 1,
-  diubah      TEXT NOT NULL DEFAULT (datetime('now')),
-  pengguna_id INTEGER REFERENCES pengguna(id) ON DELETE CASCADE
+  diubah      TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_dewasa_nama ON dewasa(nama);
-CREATE INDEX IF NOT EXISTS idx_dewasa_pengguna ON dewasa(pengguna_id);
 
 -- Penanda harian dewasa per pengguna (kekeran desa / pengecualian khusus)
 CREATE TABLE IF NOT EXISTS penanda_dewasa (
@@ -44,7 +64,22 @@ CREATE TABLE IF NOT EXISTS penanda_dewasa (
   PRIMARY KEY (tanggal, dewasa_id, pengguna_id)
 );
 CREATE INDEX IF NOT EXISTS idx_penanda_dewasa_tgl ON penanda_dewasa(tanggal);
+`);
 
+// Migrasi otomatis: Tambahkan kolom pengguna_id jika belum ada di tabel dewasa
+try {
+  const info = db.prepare("PRAGMA table_info(dewasa)").all();
+  const adaPenggunaId = info.some(col => col.name === 'pengguna_id');
+  if (!adaPenggunaId) {
+    db.exec("ALTER TABLE dewasa ADD COLUMN pengguna_id INTEGER REFERENCES pengguna(id) ON DELETE CASCADE");
+    console.log("Migrasi: Kolom pengguna_id berhasil ditambahkan ke tabel dewasa.");
+  }
+  db.exec("CREATE INDEX IF NOT EXISTS idx_dewasa_pengguna ON dewasa(pengguna_id)");
+} catch (e) {
+  console.error("Gagal melakukan migrasi kolom pengguna_id:", e);
+}
+
+db.exec(`
 -- Koreksi Sasih / Penanggal hasil rapat peranda (menimpa perhitungan)
 CREATE TABLE IF NOT EXISTS koreksi_sasih (
   tanggal   TEXT PRIMARY KEY,               -- YYYY-MM-DD
@@ -76,28 +111,6 @@ CREATE TABLE IF NOT EXISTS catatan (
   dibuat   TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_catatan_tgl ON catatan(tanggal);
-
--- Pengguna & sesi
-CREATE TABLE IF NOT EXISTS pengguna (
-  id            INTEGER PRIMARY KEY AUTOINCREMENT,
-  nama          TEXT NOT NULL,
-  nama_pengguna TEXT NOT NULL UNIQUE,
-  sandi_hash    TEXT NOT NULL,
-  garam         TEXT NOT NULL,
-  peran         TEXT NOT NULL DEFAULT 'pembaca',  -- admin | peranda | pembaca
-  aktif         INTEGER NOT NULL DEFAULT 1,
-  wajib_ganti   INTEGER NOT NULL DEFAULT 0,
-  dibuat        TEXT NOT NULL DEFAULT (datetime('now'))
-);
-
-CREATE TABLE IF NOT EXISTS sesi (
-  token_hash  TEXT PRIMARY KEY,
-  pengguna_id INTEGER NOT NULL REFERENCES pengguna(id) ON DELETE CASCADE,
-  kedaluwarsa TEXT NOT NULL,
-  alamat      TEXT NOT NULL DEFAULT '',
-  dibuat      TEXT NOT NULL DEFAULT (datetime('now'))
-);
-CREATE INDEX IF NOT EXISTS idx_sesi_pengguna ON sesi(pengguna_id);
 
 -- Jejak seluruh perubahan
 CREATE TABLE IF NOT EXISTS riwayat (
