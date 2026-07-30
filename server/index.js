@@ -211,6 +211,12 @@ const server = http.createServer(async (req, res) => {
       });
     }
     if (p === '/api/tika') return json(res, svc.tikaPawukon());
+    if (p === '/api/tika-hibrida') {
+      const tahun = +q.get('tahun'), sasih = +q.get('sasih');
+      if (tahun && !(tahun >= 1900 && tahun <= 3000)) return galat(res, 'tahun tidak sah');
+      if (sasih && !(sasih >= 1 && sasih <= 12)) return galat(res, 'sasih tidak sah (1-12)');
+      return json(res, svc.tikaHibrida(tahun || 0, sasih || 0));
+    }
     if (p === '/api/hari') {
       const t = q.get('tanggal');
       if (!TGL.test(t || '')) return galat(res, 'Parameter "tanggal" harus YYYY-MM-DD');

@@ -22,6 +22,7 @@ export const api = {
   penggunaHapus: (id) => minta(`/api/pengguna/${id}`, { method: 'DELETE' }),
   meta: () => minta('/api/meta'),
   tika: () => minta('/api/tika'),
+  tikaHibrida: (tahun, sasih) => minta(`/api/tika-hibrida?tahun=${tahun || ''}&sasih=${sasih || ''}`),
   hari: (t) => minta(`/api/hari?tanggal=${t}`),
   bulan: (th, bl) => minta(`/api/bulan?tahun=${th}&bulan=${bl}`),
   hariBaik: (p) => minta(`/api/hari-baik?dari=${p.dari}&jenis=${p.jenis}&taraf=${p.taraf}&tanpaAla=${p.tanpaAla ? 1 : 0}`),

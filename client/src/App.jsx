@@ -1051,6 +1051,59 @@ function DetailHari({ d, meta, muatUlang, bolehSunting, tutup }) {
 const LAMBANG = ['☂', '☉', '✦', '◈', '✚', '◉', '▲', '⬢', '❋', '⌂', '✖', '♆', '☾', '⚑'];
 const KELAS_SIFAT = ['simayu', 'simala', 'simdua', 'simnet'];
 
+/**
+ * Dewa pelindung tiap Wuku menurut tradisi Wariga Bali.
+ * Ikon menggunakan SVG inline bergaya rerajahan — simbol sakral
+ * yang khas untuk masing-masing dewa. Warna diselaraskan dengan
+ * arah mata angin sesuai Dewata Nawa Sanga.
+ */
+const DEWA_WUKU = {
+  Sinta:        { dewa: 'Batara Yamadipati',     arah: 'selatan',    warna: '#B71C1C',  ikon: 'M12 2L8 8h3v4H8l4 6 4-6h-3V8h3z' },
+  Landep:       { dewa: 'Batara Maheswara',       arah: 'tenggara',   warna: '#E65100',  ikon: 'M12 3l-7 7h4v4h-4l7 7 7-7h-4v-4h4z' },
+  Ukir:         { dewa: 'Batara Saraswati',       arah: 'barat daya', warna: '#880E4F',  ikon: 'M12 2a4 4 0 00-4 4v4a4 4 0 108 0V6a4 4 0 00-4-4zm0 16a2 2 0 100-4 2 2 0 000 4z' },
+  Kulantir:     { dewa: 'Batara Sadashiwa',        arah: 'pusat',      warna: '#4A148C',  ikon: 'M12 2l3 4-1 5 4 2-4 3-2 4-2-4-4-3 4-2-1-5z' },
+  Tolu:         { dewa: 'Batara Brahma',           arah: 'selatan',    warna: '#B71C1C',  ikon: 'M12 4a3 3 0 110 6 3 3 0 010-6zm-4 8l4 8 4-8z' },
+  Gumbreg:      { dewa: 'Batara Kamajaya',         arah: 'timur',      warna: '#1B5E20',  ikon: 'M12 3c-3 0-5 4-5 7s2 7 5 7 5-4 5-7-2-7-5-7zm0 4a2 2 0 110 4 2 2 0 010-4z' },
+  Wariga:       { dewa: 'Batara Candra',           arah: 'barat',      warna: '#F9A825',  ikon: 'M12 2a7 7 0 110 14c-2.5 0-4.7-1.3-6-3.3A7 7 0 0012 2z' },
+  Warigadean:   { dewa: 'Dewi Sri',                arah: 'timur laut', warna: '#2E7D32',  ikon: 'M12 2v6l4 3-2 5h-4l-2-5 4-3V2zm-2 14h4v4h-4z' },
+  Julungwangi:  { dewa: 'Batara Wisnu',            arah: 'utara',      warna: '#0D47A1',  ikon: 'M12 2l-5 5v6l5 5 5-5V7zm0 4a2 2 0 110 4 2 2 0 010-4z' },
+  Sungsang:     { dewa: 'Batara Sambu',            arah: 'timur laut', warna: '#00695C',  ikon: 'M12 3L6 9l2 2 4-3 4 3 2-2zm-4 8l4 6 4-6z' },
+  Dungulan:     { dewa: 'Batara Iswara',           arah: 'timur',      warna: '#1B5E20',  ikon: 'M12 2l4 5-1 5 3 4-6 2-6-2 3-4-1-5zm0 9a2 2 0 100-4 2 2 0 000 4z' },
+  Kuningan:     { dewa: 'Batara Ciwa',             arah: 'pusat',      warna: '#4A148C',  ikon: 'M12 2a8 8 0 100 16 8 8 0 000-16zm0 4a4 4 0 110 8 4 4 0 010-8zm0 2a2 2 0 100 4 2 2 0 010-4z' },
+  Langkir:      { dewa: 'Batara Durga',            arah: 'barat laut', warna: '#263238',  ikon: 'M7 4l5 3 5-3v5l-3 4 3 4v3H7v-3l3-4-3-4z' },
+  Medangsia:    { dewa: 'Batara Bhairawa',          arah: 'barat daya', warna: '#880E4F',  ikon: 'M8 3l4 4 4-4v4l-2 3 2 3v4l-4-2-4 2v-4l2-3-2-3z' },
+  Pujut:        { dewa: 'Batara Surya',            arah: 'timur',      warna: '#E65100',  ikon: 'M12 5a5 5 0 100 10 5 5 0 000-10zm0-3v2m0 14v2m7-9h2M3 12H1m15.07-5.07l1.41-1.41M4.93 19.07l1.41-1.41m0-11.32L4.93 4.93m12.73 12.73l1.41 1.41' },
+  Pahang:       { dewa: 'Batara Parwata',           arah: 'utara',      warna: '#0D47A1',  ikon: 'M4 18l4-7 4 4 4-11 4 14z' },
+  Krulut:       { dewa: 'Batara Gana',             arah: 'barat',      warna: '#F9A825',  ikon: 'M12 3c-2 0-4 1.5-4 4a4 4 0 003 3.8V15l-2 2h6l-2-2v-4.2A4 4 0 0016 7c0-2.5-2-4-4-4zm0 14a2 2 0 100 4 2 2 0 000-4z' },
+  Merakih:      { dewa: 'Batara Kuwera',           arah: 'utara',      warna: '#1565C0',  ikon: 'M6 4h12v3H6zm2 5h8v3H8zm-2 5h12v3H6zm3 5h6v2H9z' },
+  Tambir:       { dewa: 'Batara Bayu',             arah: 'barat laut', warna: '#263238',  ikon: 'M4 12c2-4 5-6 8-6s6 2 8 6c-2 4-5 6-8 6s-6-2-8-6zm8-3a3 3 0 100 6 3 3 0 000-6z' },
+  Medangkungan: { dewa: 'Batara Kala',             arah: 'barat daya', warna: '#880E4F',  ikon: 'M12 2l-2 4-4 1 3 3-1 5 4-2 4 2-1-5 3-3-4-1z' },
+  Matal:        { dewa: 'Batara Uma',              arah: 'selatan',    warna: '#B71C1C',  ikon: 'M12 2a3 3 0 00-3 3c0 1.3.8 2.4 2 2.8V12H8v2h3v4h2v-4h3v-2h-3V7.8c1.2-.4 2-1.5 2-2.8a3 3 0 00-3-3z' },
+  Uye:          { dewa: 'Batara Indra',            arah: 'timur',      warna: '#1B5E20',  ikon: 'M12 3l-6 5h3v4H6l6 6 6-6h-3V8h3z' },
+  Menail:       { dewa: 'Batara Guru',             arah: 'pusat',      warna: '#4A148C',  ikon: 'M12 2L6 8h3v3L6 14h3v4h6v-4h3l-3-3V8h3zm0 3a1.5 1.5 0 110 3 1.5 1.5 0 010-3z' },
+  Prangbakat:   { dewa: 'Batara Yama',             arah: 'selatan',    warna: '#B71C1C',  ikon: 'M8 3v7H6l6 8 6-8h-2V3zm2 2h4v5h-4z' },
+  Bala:         { dewa: 'Batara Rudra',            arah: 'barat daya', warna: '#880E4F',  ikon: 'M12 2l2 4h4l-3 4 1 5-4-2-4 2 1-5-3-4h4z' },
+  Ugu:          { dewa: 'Batara Ludra',            arah: 'barat',      warna: '#F9A825',  ikon: 'M12 3c-4 0-7 3-7 7h3a4 4 0 118 0h3c0-4-3-7-7-7zm0 10a2 2 0 100 4 2 2 0 000-4z' },
+  Wayang:       { dewa: 'Batara Ciwa',             arah: 'pusat',      warna: '#4A148C',  ikon: 'M5 4h14l-2 6 2 6H5l2-6zm7 2a3 3 0 100 6 3 3 0 000-6z' },
+  Kelawu:       { dewa: 'Batara Wiswakarma',       arah: 'tenggara',   warna: '#E65100',  ikon: 'M12 2L8 6v4L4 14h6v4h4v-4h6l-4-4V6zm0 5a2 2 0 110 4 2 2 0 010-4z' },
+  Dukut:        { dewa: 'Batara Putra Jaya',       arah: 'timur laut', warna: '#00695C',  ikon: 'M12 3l-4 4h2v4H7l5 6 5-6h-3V7h2zm-3 13h6v2H9z' },
+  Watugunung:   { dewa: 'Batara Antaboga',         arah: 'barat',      warna: '#F9A825',  ikon: 'M6 6c0-2 2.7-4 6-4s6 2 6 4c0 3-3 5-3 8H9c0-3-3-5-3-8zm4 12h4v2h-4z' },
+};
+
+/** Ikon dewa wuku, render SVG inline bergaya rerajahan. */
+function IkonDewa({ wuku, ukuran = 24 }) {
+  const d = DEWA_WUKU[wuku];
+  if (!d) return null;
+  return (
+    <svg className="ikondewa" width={ukuran} height={ukuran} viewBox="0 0 24 24"
+      role="img" aria-label={d.dewa}>
+      <title>{d.dewa} — Dewa pelindung Wuku {wuku}</title>
+      <circle cx="12" cy="12" r="11" fill="none" stroke={d.warna} strokeWidth="1" opacity=".3" />
+      <path d={d.ikon} fill={d.warna} fillRule="evenodd" />
+    </svg>
+  );
+}
+
 function PapanTika() {
   const [data, setData] = useState(null);
   const [sel, setSel] = useState(null);
@@ -1143,7 +1196,15 @@ function PapanTika() {
                   {data.baris.map((b) => (
                     <tr key={b.nomor}>
                       <td className="no">{b.nomor}</td>
-                      <td className="wk">{b.wuku}</td>
+                      <td className="wk">
+                        <div className="wk-isi">
+                          <IkonDewa wuku={b.wuku} ukuran={22} />
+                          <div>
+                            <div className="wk-nama">{b.wuku}</div>
+                            <div className="wk-dewa">{DEWA_WUKU[b.wuku]?.dewa}</div>
+                          </div>
+                        </div>
+                      </td>
                       {b.hari.map((h) => (
                         <td key={h.pawukon}
                           className={`tikasel n${tingkatSel(h)} ${sel?.pawukon === h.pawukon ? 'pilih' : ''}`}
@@ -1186,6 +1247,19 @@ function PapanTika() {
               Warna kotak mengikuti kesimpulan untuk keperluan yang sedang dipilih di atas.
             </p>
           </div>
+
+          <div className="tikalegenda" style={{ maxHeight: '22rem', overflow: 'auto' }}>
+            <h4>Dewa Pelindung Wuku</h4>
+            {Object.entries(DEWA_WUKU).map(([wuku, d]) => (
+              <div className="lgbaris" key={wuku}>
+                <IkonDewa wuku={wuku} ukuran={20} />
+                <div>
+                  <div className="nm">{wuku}</div>
+                  <div className="kt">{d.dewa} · {d.arah}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1202,9 +1276,10 @@ function PapanTika() {
           <div className="tkkartu">
             <div className="tkkepala">
               <div>
-                <h3>{sel.wuku} · {data.saptawara[sel.pawukon % 7]}</h3>
+                <h3><IkonDewa wuku={sel.wuku} ukuran={28} /> {sel.wuku} · {data.saptawara[sel.pawukon % 7]}</h3>
                 <div className="sub2">
-                  Hari ke-{sel.pawukon + 1} dari 210 · Ingkel {sel.ingkel} · {sel.dewasa.length} dewasa berlaku
+                  {DEWA_WUKU[sel.wuku]?.dewa && <span style={{ color: '#4A148C', fontWeight: 600 }}>{DEWA_WUKU[sel.wuku].dewa}</span>}
+                  {' · '}Hari ke-{sel.pawukon + 1} dari 210 · Ingkel {sel.ingkel} · {sel.dewasa.length} dewasa berlaku
                 </div>
               </div>
               <button className="tktutup" onClick={() => setSel(null)} aria-label="Tutup">✕</button>

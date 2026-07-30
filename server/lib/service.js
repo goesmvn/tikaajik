@@ -520,4 +520,83 @@ export function tikaPawukon() {
   return cacheTika;
 }
 
+/**
+ * Tika Hibrida: papan 210 hari Pawukon + overlay Sasih tertentu.
+ * Mengembalikan data tika standar ditambah mapping posisi pawukon → tanggal
+ * yang jatuh pada Sasih terpilih, serta dewasa lunar yang berlaku pada
+ * tanggal-tanggal itu.
+ */
+export function tikaHibrida(tahun, sasihIdx) {
+  const dasar = tikaPawukon();
+  if (!tahun || !sasihIdx) return { ...dasar, hibrida: null };
+
+  // Cari semua tanggal dalam tahun Masehi yang bersasih sesuai sasihIdx
+  // Perluas ke Des thn-1 dan Jan thn+1 agar sasih yang merentang antar tahun ikut
+  const mulai = `${tahun - 1}-12-01`;
+  const akhir = `${tahun + 1}-01-31`;
+  const iMulai = dayIndex(mulai);
+  const iAkhir = dayIndex(akhir);
+
+  // Peta: posisi pawukon (0..209) → [{tanggal, tp, purnama, tilem, sasih, dewasa}]
+  const peta = new Map();
+  const sasihStr = String(sasihIdx);
+  const malaSasihStr = `M.${sasihIdx}`;
+
+  for (let i = iMulai; i <= iAkhir; i++) {
+    const info = dayInfo(i);
+    const tanggal = isoOf(i);
+
+    // Cek koreksi sasih
+    const kor = db.prepare('SELECT tp, sasih FROM koreksi_sasih WHERE tanggal = ?').get(tanggal);
+    const sasihEfektif = kor?.sasih || info.sasih;
+    const tpEfektif = kor?.tp || info.tp;
+
+    // Cocokkan sasih (bisa '4', 'M.4', dll)
+    const sEf = String(sasihEfektif || '').replace(/^M\./i, '');
+    if (sEf !== sasihStr) continue;
+
+    // Hanya ambil tanggal yang benar-benar di tahun ini
+    const thnTanggal = parseInt(tanggal.slice(0, 4), 10);
+    if (thnTanggal !== tahun) continue;
+
+    const pw = info.pawukonDay;
+    if (!peta.has(pw)) peta.set(pw, []);
+
+    // Hitung dewasa termasuk yang lunar
+    const hariUtuh = { ...info, tanggal, tp: tpEfektif, sasih: sasihEfektif };
+    if (kor?.tp) hariUtuh.tp = kor.tp;
+    // Re-parse purnama/tilem dari tp efektif
+    hariUtuh.purnama = parseTP(tpEfektif).some(x => x.jenis === 'penanggal' && x.angka === 15);
+    hariUtuh.tilem = parseTP(tpEfektif).some(x => x.jenis === 'panglong' && x.angka === 15);
+    hariUtuh.penanggalan = parseTP(tpEfektif);
+
+    const dewasa = dewasaPadaHari(i, hariUtuh);
+    const mala = /^M\./i.test(String(sasihEfektif || ''));
+
+    peta.set(pw, [...peta.get(pw), {
+      tanggal,
+      tp: tpEfektif,
+      purnama: hariUtuh.purnama,
+      tilem: hariUtuh.tilem,
+      mala,
+      dewasa: dewasa.map(d => ({ id: d.id, nama: d.nama, sifat: d.sifat, bobot: d.bobot,
+        keterangan: d.keterangan, sumber: d.sumber, yadnya: yadnyaDewasa(d.keterangan) })),
+      kesimpulan: kesimpulanDewasa(dewasa),
+    }]);
+  }
+
+  // Ubah Map jadi objek biasa untuk JSON
+  const overlay = {};
+  for (const [pw, arr] of peta) overlay[pw] = arr;
+
+  return {
+    ...dasar,
+    hibrida: {
+      tahun,
+      sasih: sasihIdx,
+      overlay,  // { [pawukonPos]: [{tanggal, tp, purnama, tilem, dewasa, kesimpulan}] }
+    },
+  };
+}
+
 export { TARAF, META, EXCEL_RANGE, isoOf, dayIndex };
