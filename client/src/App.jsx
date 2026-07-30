@@ -181,15 +181,15 @@ function Masuk({ selesai, batal }) {
       alignItems: 'center',
       justifyContent: 'center',
       background: 'linear-gradient(135deg, #1a0f07 0%, #2c1a0e 50%, #402412 100%)',
-      padding: '1.5rem',
+      padding: '1rem',
       boxSizing: 'border-box'
     }}>
       <div style={{
         display: 'flex',
         flexDirection: 'row',
+        flexWrap: 'wrap',
         width: '100%',
-        maxWidth: '56rem',
-        minHeight: '32rem',
+        maxWidth: '54rem',
         borderRadius: '1.2rem',
         overflow: 'hidden',
         boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
@@ -198,16 +198,18 @@ function Masuk({ selesai, batal }) {
       }}>
         {/* Sisi Kiri: Gambar Nuansa Bali & Identitas Tika Digital */}
         <div style={{
-          flex: 1,
+          flex: '1 1 20rem',
           position: 'relative',
           background: 'linear-gradient(rgba(20, 10, 5, 0.5), rgba(40, 20, 10, 0.8)), url("https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1000&q=80")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          padding: '2.5rem',
+          padding: '2.5rem 2rem',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'space-between',
-          color: '#fff'
+          color: '#fff',
+          boxSizing: 'border-box',
+          minHeight: '16rem'
         }}>
           <div>
             <div style={{
@@ -227,7 +229,7 @@ function Masuk({ selesai, batal }) {
             </div>
             <h1 style={{
               fontFamily: "'Lora', serif",
-              fontSize: '2.4rem',
+              fontSize: '2.2rem',
               fontWeight: 700,
               margin: '0 0 .5rem',
               lineHeight: 1.2,
@@ -237,7 +239,7 @@ function Masuk({ selesai, batal }) {
               Tika Digital
             </h1>
             <p style={{
-              fontSize: '1rem',
+              fontSize: '.95rem',
               lineHeight: 1.6,
               color: '#E6D7C3',
               maxWidth: '22rem',
@@ -249,13 +251,14 @@ function Masuk({ selesai, batal }) {
           </div>
 
           <div style={{
-            padding: '1rem 1.2rem',
+            padding: '.8rem 1rem',
             background: 'rgba(0,0,0,0.4)',
             backdropFilter: 'blur(8px)',
             borderRadius: '.8rem',
             border: '1px solid rgba(255,255,255,0.15)',
             fontSize: '.82rem',
-            color: '#F0E6D2'
+            color: '#F0E6D2',
+            marginTop: '1.5rem'
           }}>
             “Alah Dening Sasih — Rahayu ring Waktu, Selamat ring Dewasa.”
           </div>
@@ -263,12 +266,13 @@ function Masuk({ selesai, batal }) {
 
         {/* Sisi Kanan: Login Form */}
         <div style={{
-          width: '24rem',
-          padding: '3rem 2.5rem',
+          flex: '1 1 20rem',
+          padding: '2.5rem 2rem',
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          background: 'var(--kartu, #ffffff)'
+          background: 'var(--kartu, #ffffff)',
+          boxSizing: 'border-box'
         }}>
           <h2 style={{
             fontFamily: "'Lora', serif",
