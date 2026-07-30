@@ -13,4 +13,4 @@ COPY server/ ./server/
 COPY --from=builder /app/client/dist ./client/dist
 EXPOSE 8787
 ENV PORT=8787
-CMD ["node", "server/index.js"]
+CMD ["sh", "-c", "mkdir -p server/data && node server/index.js"]
