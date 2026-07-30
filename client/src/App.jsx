@@ -581,8 +581,25 @@ function Strip({ n, meta, ket = true }) {
 /** Kesimpulan lima tingkat, selalu berupa tulisan — bukan warna saja. */
 function Simpul({ k, kecil }) {
   if (!k) return null;
-  return <span className={`simpul k${k.tingkat}`} title={`Ayu ${k.ayu} · Ala ${k.ala}`}>
-    {kecil ? k.ringkas : k.nama}</span>;
+  const mapTingkatTaraf = [
+    'kosong', 
+    '#B71C1C', // Sangat Ala -> Taraf Ala 9 (Utamaning Utama Ala)
+    '#EF5350', // Ala -> Taraf Ala 5 (Madyaning Madya Ala)
+    '#7C7268', // Sedang -> Netral
+    '#66BB6A', // Ayu -> Taraf Ayu 5 (Madyaning Madya Ayu)
+    '#1B5E20'  // Sangat Ayu -> Taraf Ayu 9 (Utamaning Utama Ayu)
+  ];
+  const warnaText = k.tingkat === 3 ? '#fff' : (k.tingkat === 1 || k.tingkat === 5 ? '#fff' : '#2B2B2B');
+  const bg = mapTingkatTaraf[k.tingkat] || 'var(--kartu3)';
+  const border = k.tingkat === 3 ? 'var(--garis2)' : bg;
+
+  return (
+    <span className="simpul" 
+      style={{ background: bg, color: warnaText, borderColor: border }} 
+      title={`Ayu ${k.ayu} · Ala ${k.ala}`}>
+      {kecil ? k.ringkas : k.nama}
+    </span>
+  );
 }
 
 function MiniKalender({ bln, geser, tanggal, hariIni, pilih }) {
