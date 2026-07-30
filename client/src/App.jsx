@@ -108,6 +108,11 @@ export default function App() {
                 <div className="nm">{saya.nama}</div>
                 <div className="pr">{PERAN_NAMA[saya.peran]}</div>
               </div>
+              {bolehSunting && (
+                <button className="btn aksi" onClick={() => { setTab('kelola'); window.scrollTo(0, 0); }} style={{ marginLeft: '.3rem', background: '#2E7D32' }}>
+                  ✎ Panel Kelola
+                </button>
+              )}
               <button className="btn" onClick={keluar}>Keluar</button>
             </>) : (<>
               <div><div className="nm">Belum masuk</div><div className="pr">hanya dapat membaca</div></div>
