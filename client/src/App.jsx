@@ -1109,15 +1109,30 @@ function PapanTika() {
   const [sel, setSel] = useState(null);
   const [galat, setGalat] = useState(null);
   const [maksud, setMaksud] = useState('umum');
+  const [sibukHibrida, setSibukHibrida] = useState(false);
 
-  // Tekan Esc untuk menutup pop-up — jalan keluar yang tetap tersedia
-  // walau tombol tutup terlewat oleh pengguna.
+  // Hibrida: filter Tahun + Sasih
+  const thnIni = new Date().getFullYear();
+  const [hibridaTahun, setHibridaTahun] = useState(thnIni);
+  const [hibridaSasih, setHibridaSasih] = useState(0); // 0 = tidak aktif
+  const [hibridaData, setHibridaData] = useState(null);
+
   useEffect(() => {
     const onKey = (e) => { if (e.key === 'Escape') setSel(null); };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
   useEffect(() => { api.tika().then(setData).catch((e) => setGalat(e.message)); }, []);
+
+  // Muat data hibrida ketika Sasih dipilih
+  useEffect(() => {
+    if (!hibridaSasih) { setHibridaData(null); return; }
+    setSibukHibrida(true);
+    api.tikaHibrida(hibridaTahun, hibridaSasih)
+      .then((d) => setHibridaData(d.hibrida))
+      .catch(() => setHibridaData(null))
+      .finally(() => setSibukHibrida(false));
+  }, [hibridaTahun, hibridaSasih]);
 
   if (galat) return <div className="pesan galat">{galat}</div>;
   if (!data) return <div className="muat">Menyusun papan tika…</div>;
@@ -1128,10 +1143,16 @@ function PapanTika() {
   const yTerpilih = data.yadnya.find((y) => y.kunci === maksud);
   const kosongYadnya = yTerpilih && semuaSel.every((h) => h.tingkat[maksud] === 0) ? yTerpilih : null;
 
+  const overlay = hibridaData?.overlay || {};
+  const adaOverlay = hibridaSasih > 0 && hibridaData;
+
   const simbol = (i) => {
     const l = data.lambang[i];
     return <span key={i} className={KELAS_SIFAT[l.sifat]} title={`${l.nama} — ${SIFAT[l.sifat]}`}>{LAMBANG[i]}</span>;
   };
+
+  const tahunPilihan = [];
+  for (let y = thnIni - 5; y <= thnIni + 25; y++) tahunPilihan.push(y);
 
   return (
     <>
@@ -1140,6 +1161,42 @@ function PapanTika() {
         Bentuk tika cetak: 30 baris Wuku × 7 kolom Saptawara = 210 hari, satu putaran penuh Pawukon.
         Isinya berulang selamanya, jadi papan ini berlaku untuk tahun mana pun.
       </p>
+
+      {/* Selector Hibrida: Tahun + Sasih */}
+      <div className="kartu" style={{ marginBottom: '.8rem', background: '#F8F4EA', border: '2px solid #8A6A2A' }}>
+        <h3 style={{ margin: '0 0 .4rem', color: '#2A2008' }}>🌙 Pemilihan Sasih &amp; Tahun (Papan Tika Hibrida)</h3>
+        <p className="sub" style={{ margin: '0 0 .6rem' }}>
+          Pilih tahun dan sasih untuk menampilkan posisi hari serta dewasa bulan (Purnama, Tilem, Penanggal, Panglong) pada grid Pawukon.
+        </p>
+        <div className="baris" style={{ gap: '.8rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div>
+            <label className="fl" style={{ fontWeight: 700 }}>Tahun Masehi</label>
+            <select value={hibridaTahun} onChange={(e) => setHibridaTahun(+e.target.value)}
+              style={{ minWidth: '7rem', padding: '.4rem', fontSize: '.9rem' }}>
+              {tahunPilihan.map((y) => <option key={y} value={y}>{y}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="fl" style={{ fontWeight: 700 }}>Pilih Sasih</label>
+            <select value={hibridaSasih} onChange={(e) => setHibridaSasih(+e.target.value)}
+              style={{ minWidth: '11rem', padding: '.4rem', fontSize: '.9rem' }}>
+              <option value={0}>— Tampilkan Seluruh Sasih (Statis) —</option>
+              {SASIH.slice(1).map((s, i) => <option key={i + 1} value={i + 1}>Sasih {i + 1} — {s}</option>)}
+            </select>
+          </div>
+          {hibridaSasih > 0 && (
+            <button className="btn" style={{ padding: '.4rem .8rem' }} onClick={() => setHibridaSasih(0)}>
+              Reset Filter Sasih
+            </button>
+          )}
+        </div>
+        {sibukHibrida && <div className="muat" style={{ marginTop: '.4rem' }}>Memuat data Sasih…</div>}
+        {adaOverlay && (
+          <div style={{ fontSize: '.84rem', color: '#1565C0', marginTop: '.6rem', fontWeight: 600 }}>
+            ✓ Sasih <b>{SASIH[hibridaSasih]}</b> tahun <b>{hibridaTahun}</b> aktif — <b>{Object.keys(overlay).length}</b> kotak Pawukon yang jatuh pada sasih ini ditandai 🌙.
+          </div>
+        )}
+      </div>
       <div className="pesan info">
         Hanya dewasa yang bergantung Wewaran &amp; Wuku yang dapat dipakukan di sini
         (<b>{data.ringkas.pawukonSaja}</b> dewasa, {data.ringkas.totalTanda.toLocaleString('id')} tanda).
@@ -1205,18 +1262,25 @@ function PapanTika() {
                           </div>
                         </div>
                       </td>
-                      {b.hari.map((h) => (
-                        <td key={h.pawukon}
-                          className={`tikasel n${tingkatSel(h)} ${sel?.pawukon === h.pawukon ? 'pilih' : ''}`}
-                          onClick={() => setSel({ ...h, wuku: b.wuku, ingkel: b.ingkel })}
-                          title={`${b.wuku} · ${data.saptawara[h.pawukon % 7]} — ${
-                            tingkatSel(h) ? data.tingkatan[tingkatSel(h)].nama : 'tanpa penilaian'} · ${h.dewasa.length} dewasa`}>
-                          <span className="tk">{tingkatSel(h) ? data.tingkatan[tingkatSel(h)].ringkas : '–'}</span>
-                          <div className="lam">{h.lambang.map(simbol)}</div>
-                          {h.dewasa.length > h.lambang.length &&
-                            <div className="sisa">+{h.dewasa.length - h.lambang.length}</div>}
-                        </td>
-                      ))}
+                      {b.hari.map((h) => {
+                        const ov = overlay[h.pawukon];
+                        const aktif = adaOverlay && ov;
+                        const redup = adaOverlay && !ov;
+                        return (
+                          <td key={h.pawukon}
+                            className={`tikasel n${tingkatSel(h)} ${sel?.pawukon === h.pawukon ? 'pilih' : ''} ${aktif ? 'hibrida-aktif' : ''} ${redup ? 'hibrida-redup' : ''}`}
+                            onClick={() => setSel({ ...h, wuku: b.wuku, ingkel: b.ingkel, overlay: ov || null })}
+                            title={`${b.wuku} · ${data.saptawara[h.pawukon % 7]} — ${
+                              tingkatSel(h) ? data.tingkatan[tingkatSel(h)].nama : 'tanpa penilaian'} · ${h.dewasa.length} dewasa${
+                              aktif ? ` · 🌙 ${ov.length} tanggal Sasih ${SASIH[hibridaSasih]}` : ''}`}>
+                            <span className="tk">{tingkatSel(h) ? data.tingkatan[tingkatSel(h)].ringkas : '–'}</span>
+                            <div className="lam">{h.lambang.map(simbol)}</div>
+                            {h.dewasa.length > h.lambang.length &&
+                              <div className="sisa">+{h.dewasa.length - h.lambang.length}</div>}
+                            {aktif && <div className="hibrida-tanda" title={`Sasih ${SASIH[hibridaSasih]}: ${ov.map(o => o.tanggal).join(', ')}`}>🌙</div>}
+                          </td>
+                        );
+                      })}
                       <td className="ik">{b.ingkel}</td>
                     </tr>
                   ))}
