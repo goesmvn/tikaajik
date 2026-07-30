@@ -375,6 +375,7 @@ function Kalender({ meta, tanggal, setTanggal, bolehSunting }) {
           <p className="sub" style={{ margin: '.9rem 0 0', fontSize: '.8rem' }}>
             Blok berwarna = dewasa yang berlaku: <b style={{ color: 'var(--ayuT)' }}>hijau Ayu</b>,
             <b style={{ color: 'var(--alaT)' }}> merah Ala</b>, <b style={{ color: 'var(--duaT)' }}>jingga Ayu &amp; Ala</b>.
+            Border dan outline menunjukkan taraf kekuatan: <b style={{ color: '#2E7D32' }}>hijau (Ayu, skala 1-9)</b> dan <b style={{ color: '#D32F2F' }}>merah (Ala, skala 1-9)</b>.
             Kolom bergaris miring berarti tanggal Bali-nya masih <b>proyeksi</b>, menunggu penetapan rapat peranda.
           </p>
         </div>
