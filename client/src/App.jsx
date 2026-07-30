@@ -174,22 +174,163 @@ function Masuk({ selesai, batal }) {
     catch (err) { setGalat(err.message); } finally { setSibuk(false); }
   };
   return (
-    <div className="panel" style={{ maxWidth: '32rem', margin: '3rem auto' }}>
-      <h2>Masuk</h2>
-      <p className="sub">Membaca kalender terbuka untuk umum. Masuk diperlukan hanya untuk menambah atau memperbaiki data.</p>
-      {galat && <div className="pesan galat">{galat}</div>}
-      <form onSubmit={kirim}>
-        <label className="fl">Nama pengguna</label>
-        <input type="text" autoFocus autoComplete="username" value={f.namaPengguna}
-          onChange={(e) => setF({ ...f, namaPengguna: e.target.value })} />
-        <label className="fl" style={{ marginTop: '.8rem' }}>Kata sandi</label>
-        <input type="password" autoComplete="current-password" value={f.sandi}
-          onChange={(e) => setF({ ...f, sandi: e.target.value })} />
-        <div className="baris" style={{ marginTop: '1.1rem' }}>
-          <button type="submit" className="btn aksi" disabled={sibuk}>{sibuk ? 'Memeriksa…' : 'Masuk'}</button>
-          {batal && <button type="button" className="btn" onClick={batal}>Kembali ke kalender</button>}
+    <div style={{
+      display: 'flex',
+      minHeight: '100vh',
+      width: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: 'linear-gradient(135deg, #1a0f07 0%, #2c1a0e 50%, #402412 100%)',
+      padding: '1.5rem',
+      boxSizing: 'border-box'
+    }}>
+      <div style={{
+        display: 'flex',
+        flexDirection: 'row',
+        width: '100%',
+        maxWidth: '56rem',
+        minHeight: '32rem',
+        borderRadius: '1.2rem',
+        overflow: 'hidden',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+        border: '1px solid rgba(212,175,55,0.3)',
+        background: 'var(--kartu, #fff)'
+      }}>
+        {/* Sisi Kiri: Gambar Nuansa Bali & Identitas Tika Digital */}
+        <div style={{
+          flex: 1,
+          position: 'relative',
+          background: 'linear-gradient(rgba(20, 10, 5, 0.5), rgba(40, 20, 10, 0.8)), url("https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1000&q=80")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          padding: '2.5rem',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+          color: '#fff'
+        }}>
+          <div>
+            <div style={{
+              display: 'inline-block',
+              padding: '.3rem .8rem',
+              borderRadius: '2rem',
+              background: 'rgba(212,175,55,0.25)',
+              border: '1px solid rgba(212,175,55,0.6)',
+              color: '#F9E0AE',
+              fontSize: '.78rem',
+              fontWeight: 700,
+              letterSpacing: '.08em',
+              textTransform: 'uppercase',
+              marginBottom: '1rem'
+            }}>
+              Wariga &amp; Padewasan Bali
+            </div>
+            <h1 style={{
+              fontFamily: "'Lora', serif",
+              fontSize: '2.4rem',
+              fontWeight: 700,
+              margin: '0 0 .5rem',
+              lineHeight: 1.2,
+              color: '#FFF8E7',
+              textShadow: '0 2px 4px rgba(0,0,0,0.6)'
+            }}>
+              Tika Digital
+            </h1>
+            <p style={{
+              fontSize: '1rem',
+              lineHeight: 1.6,
+              color: '#E6D7C3',
+              maxWidth: '22rem',
+              margin: 0,
+              opacity: .95
+            }}>
+              Sistem Penanggalan &amp; Kalender Bali Digital berbasis Algoritma Pawukon &amp; Lunisolar Sasih secara Presisi.
+            </p>
+          </div>
+
+          <div style={{
+            padding: '1rem 1.2rem',
+            background: 'rgba(0,0,0,0.4)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '.8rem',
+            border: '1px solid rgba(255,255,255,0.15)',
+            fontSize: '.82rem',
+            color: '#F0E6D2'
+          }}>
+            “Alah Dening Sasih — Rahayu ring Waktu, Selamat ring Dewasa.”
+          </div>
         </div>
-      </form>
+
+        {/* Sisi Kanan: Login Form */}
+        <div style={{
+          width: '24rem',
+          padding: '3rem 2.5rem',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          background: 'var(--kartu, #ffffff)'
+        }}>
+          <h2 style={{
+            fontFamily: "'Lora', serif",
+            fontSize: '1.6rem',
+            margin: '0 0 .3rem',
+            color: 'var(--tulis, #2c1a0e)'
+          }}>Masuk ke Aplikasi</h2>
+          <p className="sub" style={{ margin: '0 0 1.5rem', fontSize: '.85rem' }}>
+            Masukkan nama pengguna dan kata sandi Anda untuk mengakses kalender.
+          </p>
+
+          {galat && <div className="pesan galat" style={{ marginBottom: '1rem' }}>{galat}</div>}
+
+          <form onSubmit={kirim}>
+            <label className="fl" style={{ fontWeight: 600, fontSize: '.82rem' }}>Nama Pengguna</label>
+            <input type="text" autoFocus autoComplete="username" value={f.namaPengguna}
+              onChange={(e) => setF({ ...f, namaPengguna: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '.7rem .9rem',
+                borderRadius: '.5rem',
+                border: '1px solid var(--garis2, #ccc)',
+                fontSize: '.95rem',
+                boxSizing: 'border-box'
+              }} />
+
+            <label className="fl" style={{ marginTop: '1rem', fontWeight: 600, fontSize: '.82rem' }}>Kata Sandi</label>
+            <input type="password" autoComplete="current-password" value={f.sandi}
+              onChange={(e) => setF({ ...f, sandi: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '.7rem .9rem',
+                borderRadius: '.5rem',
+                border: '1px solid var(--garis2, #ccc)',
+                fontSize: '.95rem',
+                boxSizing: 'border-box'
+              }} />
+
+            <button type="submit" className="btn aksi" disabled={sibuk} style={{
+              width: '100%',
+              marginTop: '1.6rem',
+              padding: '.8rem',
+              fontSize: '1rem',
+              fontWeight: 700,
+              borderRadius: '.5rem',
+              cursor: 'pointer'
+            }}>
+              {sibuk ? 'Memeriksa…' : 'Masuk Kalender'}
+            </button>
+
+            {batal && (
+              <button type="button" className="btn" onClick={batal} style={{
+                width: '100%',
+                marginTop: '.6rem',
+                padding: '.6rem'
+              }}>
+                Batal
+              </button>
+            )}
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

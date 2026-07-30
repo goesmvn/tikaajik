@@ -25,7 +25,7 @@ const PORT = process.env.PORT || 8787;
 const KLIEN = path.join(__dirname, '../client/dist');
 const ASAL_DEV = process.env.TIKA_ASAL_DEV || '';       // mis. http://localhost:5173
 const AMAN = process.env.TIKA_HTTPS === '1';            // pasang bila di balik HTTPS
-const WAJIB_MASUK = process.env.TIKA_WAJIB_MASUK === '1';
+const WAJIB_MASUK = process.env.TIKA_WAJIB_MASUK !== '0';
 
 console.log('Menyiapkan basis data…', seed());
 auth.bersihkanSesiKedaluwarsa();
