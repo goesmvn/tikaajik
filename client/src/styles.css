@@ -145,11 +145,13 @@ body{background:var(--laman);color:var(--tulis);
 .harigrid{display:grid;gap:.4rem}
 .harigrid:last-of-type{flex:1 1 auto}
 .harikepala{background:var(--kartu2);border:1px solid var(--garis);border-radius:.6rem;
-  padding:.5rem .45rem;text-align:center}
+  padding:.5rem .45rem;text-align:center;container-type:inline-size}
 .harikepala.ini{background:var(--merahmuda);border-color:var(--merah2)}
-.harikepala .nm{font-family:'Eczar',serif;font-weight:700;font-size:.9rem}
-.harikepala .tg{font-size:.74rem;color:var(--tulis3)}
-.harikepala .bl{font-size:.7rem;color:var(--merah);margin-top:.1rem}
+.harikepala .nm{font-family:'Eczar',serif;font-weight:700;font-size:clamp(.68rem,9cqi,.9rem)}
+.harikepala .nm span:last-child{font-size:clamp(.6rem,8cqi,.85rem)}
+.harikepala .tg{font-size:clamp(.56rem,7cqi,.74rem);color:var(--tulis3)}
+.harikepala .bl{font-size:clamp(.54rem,6.5cqi,.7rem);color:var(--merah);margin-top:.1rem}
+.harikepala .dw{font-size:clamp(.5rem,6cqi,.68rem);color:var(--tulis3);margin-top:.1rem}
 
 .harikolom{background:var(--kartu2);border:1px solid var(--garis);border-radius:.6rem;
   padding:.45rem;min-height:9rem;display:flex;flex-direction:column;gap:.35rem;cursor:pointer}
@@ -186,6 +188,7 @@ body{background:var(--laman);color:var(--tulis);
 .bsel.luar{opacity:.4;background:var(--kartu2)}
 .bsel .no{font-family:'Eczar',serif;font-weight:700;font-size:1.8rem;line-height:1}
 .bsel .kt{font-size:.68rem;color:var(--tulis3);line-height:1.3}
+.bsel .kt .ik{display:inline-block;margin-top:.1rem;font-size:.62rem;font-weight:600;color:var(--merah2,#8A2A2A)}
 
 /* ---------- strip 4 warna ---------- */
 .strip{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;height:.8rem;
@@ -328,16 +331,16 @@ h3{font-family:'Eczar',serif;font-weight:600;font-size:1.02rem;margin:1rem 0 .5r
 .kartu.daftar{margin-bottom:.6rem}
 
 /* ---------- papan tika (tetap bernuansa lontar) ---------- */
-.tikaluar{background:var(--kartu2);border-radius:.9rem;padding:.6rem;border:1px solid var(--garis)}
+.tikaluar{background:var(--kartu2);border-radius:.9rem;padding:.6rem;border:1px solid var(--garis);
+  display:flex;flex-direction:column;height:100%}
 .tikapapan{background:#EDE2C8;color:#1E1810;border-radius:.5rem;padding:.5rem;
-  border:2px solid #8A6A2A;box-shadow:inset 0 0 0 2px #C9A227}
+  border:2px solid #8A6A2A;box-shadow:inset 0 0 0 2px #C9A227;
+  display:flex;flex-direction:column;flex:1;min-height:0}
 .tikahias{height:1.4rem;background:repeating-linear-gradient(90deg,#8A6A2A 0 6px,transparent 6px 12px),
-  linear-gradient(#C9A227,#B08A22);border-radius:.3rem .3rem 0 0;margin-bottom:.4rem;opacity:.85}
+  linear-gradient(#C9A227,#B08A22);border-radius:.3rem .3rem 0 0;margin-bottom:.4rem;opacity:.85;flex:none}
 .tikajudul{text-align:center;font-family:'Eczar',serif;font-weight:800;font-size:1.35rem;
-  letter-spacing:.5em;margin:.1rem 0 .5rem;color:#3A2C10}
-.tikaluar{display:flex;flex-direction:column;height:100%}
-.tikapapan{display:flex;flex-direction:column;flex:1;min-height:0}
-.tikagulir{overflow:auto;flex:1;min-height:20rem;max-height:70vh}
+  letter-spacing:.5em;margin:.1rem 0 .5rem;color:#3A2C10;flex:none}
+.tikagulir{overflow:auto;flex:1;min-height:20rem}
 .tikatabel{width:100%;border-collapse:collapse;font-size:.76rem}
 .tikatabel th,.tikatabel td{border:1px solid #9C8A5E}
 .tikatabel thead th{position:sticky;top:0;z-index:2;background:#DCCFAE;font-family:'Eczar',serif;
@@ -439,8 +442,6 @@ h3{font-family:'Eczar',serif;font-weight:600;font-size:1.02rem;margin:1rem 0 .5r
   .harigrid{grid-template-columns:1fr!important}
   .bulangrid{gap:.25rem;overflow-x:auto;padding-bottom:.4rem}
   .harikepala{min-width:3.6rem;padding:.3rem .15rem}
-  .harikepala .nm{font-size:.78rem}
-  .harikepala .tg{font-size:.62rem}
   .bsel{min-height:4.2rem;padding:.2rem}
   .bsel .no{font-size:.82rem}
   .bsel .kt{font-size:.6rem;line-height:1.2}
@@ -527,7 +528,7 @@ h3{font-family:'Eczar',serif;font-weight:600;font-size:1.02rem;margin:1rem 0 .5r
     grid-template-columns: 1fr;
   }
   .tikaluar, .tikapapan { height: auto; }
-  .tikagulir { max-height: 34rem; min-height: 0; }
+  .tikagulir { max-height: 34rem; min-height: 0; flex: none; }
 }
 
 @media (max-width: 760px) {

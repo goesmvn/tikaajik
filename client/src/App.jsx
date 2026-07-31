@@ -826,18 +826,16 @@ function MiniKalender({ bln, setBln, geser, tanggal, hariIni, pilih }) {
 
 function TampilBulan({ hari, bln, tanggal, hariIni, meta, pilih }) {
   const depan = (new Date(bln.t, bln.b - 1, 1).getDay() + 6) % 7;
-  const ingkelMingguIni = hari.length > 0 ? (hari[Math.floor(hari.length / 2)]?.ingkel || '—') : '—';
   return (
     <div className="bulangrid">
       {SAPTA_DETAIL.map((s) => (
-        <div key={s.nama} className="harikepala" title={`${s.nama} (${s.hari}) · Planet: ${s.planet} · Dewa: ${s.dewa} · Urip: ${s.urip} · Ingkel: ${ingkelMingguIni}`}>
+        <div key={s.nama} className="harikepala" title={`${s.nama} (${s.hari}) · Planet: ${s.planet} · Dewa: ${s.dewa} · Urip: ${s.urip}`}>
           <div className="nm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.3rem' }}>
             <span>{s.nama}</span>
-            <span style={{ fontSize: '.85rem', fontFamily: "'Noto Serif Balinese', serif", color: 'var(--brass, #C99A2E)' }}>{s.aksara}</span>
+            <span style={{ fontFamily: "'Noto Serif Balinese', serif", color: 'var(--brass, #C99A2E)' }}>{s.aksara}</span>
           </div>
           <div className="tg">{s.hari} · {s.planet.split(' ')[0]}</div>
-          <div style={{ fontSize: '.68rem', color: 'var(--tulis3)', marginTop: '.1rem' }}>{s.dewa}</div>
-          <div style={{ fontSize: '.65rem', fontWeight: 600, color: 'var(--merah2, #8A2A2A)', marginTop: '.1rem' }}>Ingkel {ingkelMingguIni}</div>
+          <div className="dw">{s.dewa}</div>
         </div>
       ))}
       {Array.from({ length: depan }, (_, i) => <div key={'k' + i} className="bsel luar" />)}
@@ -886,7 +884,7 @@ function TampilBulan({ hari, bln, tanggal, hariIni, meta, pilih }) {
             })()}</span>
             <span className="blnbaris"><span className="no">{h.hariKe}</span>
               <BulanFase tp={h.tp} ukuran={13} /></span>
-            <span className="kt">{pendek(h.tp)}<br />{h.pancawara} · {h.wuku}{h.proyeksi ? ' · proyeksi' : ''}</span>
+            <span className="kt">{pendek(h.tp)}<br />{h.pancawara} · {h.wuku}{h.proyeksi ? ' · proyeksi' : ''}<br /><span className="ik">Ingkel {h.ingkel || '—'}</span></span>
             <span style={{ display: 'flex', gap: '.15rem', flexWrap: 'wrap' }}><Fase h={h} kecil /></span>
             <span style={{ marginTop: 'auto' }}>
               <Strip n={h.nilai} meta={meta} ket={false} />
