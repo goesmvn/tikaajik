@@ -319,7 +319,7 @@ export function bulan(tahun, bln, penggunaId = null) {
     const dewasa = dewasaPadaHari(i, dasar, penggunaId);
     out.push({
       tanggal: iso, hariKe: t, indeks: i,
-      saptawara: dasar.saptawara, pancawara: dasar.pancawara, wuku: dasar.wuku,
+      saptawara: dasar.saptawara, pancawara: dasar.pancawara, wuku: dasar.wuku, ingkel: dasar.ingkel,
       tp: dasar.tp, sasih: dasar.sasih, proyeksi: dasar.proyeksi && !kor,
       nilai, adaCatatan: jmlCatatan > 0, putusan: putusan(nilai),
       jumlahDewasa: dewasa.length,
