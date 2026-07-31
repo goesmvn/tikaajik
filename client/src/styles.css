@@ -435,11 +435,20 @@ h3{font-family:'Eczar',serif;font-weight:600;font-size:1.02rem;margin:1rem 0 .5r
 @media(max-width:760px){
   .wrap{padding:.5rem}
   .harigrid{grid-template-columns:1fr!important}
-  .bulangrid{gap:.25rem}
-  .bsel{min-height:5rem}
+  .bulangrid{gap:.25rem;overflow-x:auto;padding-bottom:.4rem}
+  .harikepala{min-width:3.6rem;padding:.3rem .15rem}
+  .harikepala .nm{font-size:.78rem}
+  .harikepala .tg{font-size:.62rem}
+  .bsel{min-height:4.2rem;padding:.2rem}
+  .bsel .no{font-size:.82rem}
+  .bsel .kt{font-size:.6rem;line-height:1.2}
   .ikonnav button span.lb{display:none}
   .ikonnav button{padding:0 .8rem}
   .judulbar h2{font-size:1.35rem}
+  .topbar{flex-direction:column;align-items:stretch;gap:.6rem;padding:.6rem}
+  .akun{justify-content:space-between;width:100%}
+  .tkkartu{width:95%!important;max-height:85vh!important;padding:.9rem!important}
+  .dialog{width:95%!important;padding:1rem!important}
 }
 
 /* ---------- kaki halaman ---------- */
