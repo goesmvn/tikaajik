@@ -826,7 +826,7 @@ function MiniKalender({ bln, setBln, geser, tanggal, hariIni, pilih }) {
 
 function TampilBulan({ hari, bln, tanggal, hariIni, meta, pilih }) {
   const depan = (new Date(bln.t, bln.b - 1, 1).getDay() + 6) % 7;
-  const ingkelMingguIni = hari.length > 0 ? (hari[Math.floor(hari.length / 2)]?.ingsadNama || '—') : '—';
+  const ingkelMingguIni = hari.length > 0 ? (hari[Math.floor(hari.length / 2)]?.ingkel || '—') : '—';
   return (
     <div className="bulangrid">
       {SAPTA_DETAIL.map((s) => (

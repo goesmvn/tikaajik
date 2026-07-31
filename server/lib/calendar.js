@@ -67,6 +67,8 @@ const SAPTA_FULL = { Red: 'Redite', Som: 'Soma', Ang: 'Anggara', Bud: 'Buda', Wr
 const WARA_KEYS = ['eka', 'dwi', 'tri', 'catur', 'sad', 'asta', 'sanga', 'ingsad', 'dasa', 'sap', 'pan', 'uku'];
 
 /** Unsur Pawukon pada indeks hari tertentu — eksak, tanpa batas tahun. */
+const INGKEL_WUKU_MAP = ['Wong', 'Sato', 'Mina', 'Manuk', 'Taru', 'Buku'];
+
 export function pawukonAt(i) {
   const p = mod(P0 + i, 210);
   const out = { pawukonDay: p, wukuIndex: Math.floor(p / 7) };
@@ -77,6 +79,7 @@ export function pawukonAt(i) {
     out[k + 'Urip'] = uripOf(raw);
   }
   out.wuku = E.wukuNames[out.wukuIndex];
+  out.ingkel = INGKEL_WUKU_MAP[out.wukuIndex % 6];
   // Nama penuh diambil dari tabel hasil Excel, BUKAN dari urutan tebakan —
   // fase Pancawara di berkas ini mulai dari Paing, bukan Umanis.
   out.saptawara = SAPTA_FULL[out.sapNama] || out.sapNama;
@@ -85,7 +88,7 @@ export function pawukonAt(i) {
   // Himpunan semua nama wara hari ini, untuk mencocokkan aturan yang
   // memakai nama ambigu (mis. 'Sri' ada di Astawara, Caturwara, dan Dasawara).
   out.waraSet = new Set(
-    [out.saptawara, out.pancawara, out.wuku, out.ekaNama, out.dwiNama, out.triNama,
+    [out.saptawara, out.pancawara, out.wuku, out.ingkel, out.ekaNama, out.dwiNama, out.triNama,
      out.caturNama, out.sadNama, out.astaNama, out.sangaNama, out.ingsadNama, out.dasaNama]
       .filter(Boolean).map((x) => x.toLowerCase())
   );
